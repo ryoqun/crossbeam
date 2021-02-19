@@ -15,5 +15,5 @@ rustup component add miri
 
 # -Zmiri-disable-stacked-borrows is needed for https://github.com/crossbeam-rs/crossbeam/issues/545
 # -Zmiri-ignore-leaks is needed for https://github.com/crossbeam-rs/crossbeam/issues/579
-export MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-disable-stacked-borrows -Zmiri-ignore-leaks"
+export MIRIFLAGS="-Zmiri-disable-isolation -Zmiri-disable-stacked-borrows -Zmiri-ignore-leaks -Zmiri-compare-exchange-weak-failure-rate=0.0"
 cargo miri test --all --exclude benchmarks
