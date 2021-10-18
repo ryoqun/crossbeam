@@ -1,6 +1,6 @@
 //! Tests for channel readiness using the `Select` struct.
 
-#![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
+// #![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
 
 use std::any::Any;
 use std::cell::Cell;

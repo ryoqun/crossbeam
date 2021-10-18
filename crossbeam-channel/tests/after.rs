@@ -1,6 +1,6 @@
 //! Tests for the after channel flavor.
 
-#![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
+// #![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
 
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;

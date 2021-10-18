@@ -1,6 +1,6 @@
 //! Tests for the never channel flavor.
 
-#![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
+// #![cfg(not(target_os = "macos"))] // TODO: assertions failed due to GitHub Actions' macOS runner is slow
 
 use std::thread;
 use std::time::{Duration, Instant};
