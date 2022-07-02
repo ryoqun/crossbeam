@@ -62,13 +62,9 @@ where
 }
 
 trait CustomCollector {
-    fn collector() -> &'static Collector {
-        panic!()
-    }
+    fn collector() -> &'static Collector;
 
-    fn local_handle() -> &'static LocalHandle {
-        panic!()
-    }
+    fn local_handle() -> &'static LocalHandle;
 }
 
 struct DefaultCollector;
