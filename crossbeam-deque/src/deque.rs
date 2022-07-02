@@ -1256,7 +1256,7 @@ impl<T, C> Injector<T, C> {
     ///
     /// let q = Injector::<i32>::new();
     /// ```
-    pub fn new() -> Injector<T> {
+    pub fn new() -> Injector<T, C> {
         Self::default()
     }
 
