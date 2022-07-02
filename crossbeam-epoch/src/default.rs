@@ -44,21 +44,10 @@ pub fn is_pinned() -> bool {
 }
 
 #[inline]
-fn with_default_handle2<F, R>(mut f: F) -> R
-where
-    F: FnMut(&LocalHandle) -> R,
-{
-    HANDLE
-        .try_with(|h| f(h))
-        .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
-}
-
-#[inline]
 fn with_default_handle<F, R>(mut f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
 {
-    //HANDLE .try_with(|h| f(h)).unwrap()
     DefaultCollector::with_handle::<F, R>(f)
 }
 
