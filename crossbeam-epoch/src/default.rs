@@ -64,7 +64,7 @@ where
 trait CustomCollector {
     fn collector() -> &'static Collector;
 
-    fn local_handle() -> &'static LocalHandle;
+    fn with_handle<F, R>(mut f: impl FnMut(&LocalHandle) -> R) -> R;
 }
 
 struct DefaultCollector;
