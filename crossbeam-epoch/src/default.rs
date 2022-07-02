@@ -44,7 +44,7 @@ pub fn is_pinned() -> bool {
 }
 
 #[inline]
-fn with_default_handle<F, R>(mut f: F) -> R
+fn with_default_handle<F, R>(f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
 {
