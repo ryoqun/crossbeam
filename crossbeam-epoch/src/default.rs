@@ -63,7 +63,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
-        DEFAULT_HANDLE
+        &DEFAULT_HANDLE
     }
 
     fn with_handle<F, R>(mut f: F) -> R
