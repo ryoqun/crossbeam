@@ -60,7 +60,6 @@ where
 {
     HANDLE
         .try_with(|h| f(h))
-        .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
 }
 
 trait CustomCollector {
