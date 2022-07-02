@@ -1081,8 +1081,8 @@ impl<T> Stealer<T> {
     }
 }
 
-impl<T> Clone for Stealer<T> {
-    fn clone(&self) -> Stealer<T> {
+impl<T, C> Clone for Stealer<T, C> {
+    fn clone(&self) -> Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
