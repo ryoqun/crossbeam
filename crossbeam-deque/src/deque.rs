@@ -692,7 +692,7 @@ impl<T> Stealer<T> {
     /// assert_eq!(w2.pop(), Some(1));
     /// assert_eq!(w2.pop(), Some(2));
     /// ```
-    pub fn steal_batch(&self, dest: &Worker<T>) -> Steal<()> {
+    pub fn steal_batch(&self, dest: &Worker<T, C>) -> Steal<()> {
         if Arc::ptr_eq(&self.inner, &dest.inner) {
             if dest.is_empty() {
                 return Steal::Empty;
