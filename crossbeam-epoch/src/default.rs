@@ -59,7 +59,7 @@ where
     F: FnMut(&LocalHandle) -> R,
 {
     //HANDLE .try_with(|h| f(h)).unwrap()
-    C::with_handle()
+    C::with_handle(f)
 }
 
 trait CustomCollector {
