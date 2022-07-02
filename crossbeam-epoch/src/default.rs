@@ -70,7 +70,7 @@ impl CustomCollector for DefaultCollector {
     where
         F: FnMut(&LocalHandle) -> R,
     {
-        DEFAULT_HANDLE
+        Self::handle()
             .try_with(|h| f(h))
             .unwrap_or_else(|_| f(&Self::collector().register()))
     }
