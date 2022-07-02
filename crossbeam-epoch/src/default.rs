@@ -59,15 +59,13 @@ where
     F: FnMut(&LocalHandle) -> R,
 {
     //HANDLE .try_with(|h| f(h)).unwrap()
-    C::with_handle::<F, R>(f)
+    DefaultCollector::with_handle::<F, R>(f)
 }
 
 trait CustomCollector {
     fn collector() -> &'static Collector;
 
-    fn with_handle<F, R>(f: F) -> R 
-where F: FnMut(&LocalHandle) -> R;
-}
+    fn with_handle<F, R>(f: F) -> R where F: FnMut(&LocalHandle) -> R; }
 
 struct DefaultCollector;
 
