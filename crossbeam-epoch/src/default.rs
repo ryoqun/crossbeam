@@ -23,7 +23,7 @@ loom::lazy_static! {
 
 thread_local! {
     /// The per-thread participant for the default garbage collector.
-    static HANDLE: LocalHandle = DEFAULT_COLLECTOR.register();
+    static DEFAULT_HANDLE: LocalHandle = DEFAULT_COLLECTOR.register();
 }
 
 /// Pins the current thread.
@@ -48,8 +48,8 @@ where
 
 trait CustomCollector {
     fn collector() -> &'static Collector;
-
-    fn with_handle<F, R>(f: F) -> R where F: FnMut(&LocalHandle) -> R; }
+    fn with_handle<F, R>(f: F) -> R where F: FnMut(&LocalHandle) -> R;
+}
 
 struct DefaultCollector;
 
@@ -61,7 +61,7 @@ impl CustomCollector for DefaultCollector {
     fn with_handle<F, R>(mut f: F) -> R 
 where F: FnMut(&LocalHandle) -> R,
       {
-        HANDLE.try_with(|h| f(h)).unwrap_or_else(|_| f(&Self::collector().register()))
+        DEFAULT_HANDLE.try_with(|h| f(h)).unwrap_or_else(|_| f(&Self::collector().register()))
     }
 }
 
