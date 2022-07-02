@@ -73,6 +73,10 @@ impl CustomCollector for DefaultCollector {
     fn collector() -> &'static Collector {
         default_collector()
     }
+
+    fn local_handle() -> &'static LocalHandle {
+        HANDLE.try_with(|h| h)
+    }
 }
 
 #[cfg(all(test, not(crossbeam_loom)))]
