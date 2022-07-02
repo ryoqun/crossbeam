@@ -28,7 +28,7 @@ pub fn default_collector() -> &'static Collector {
 
 thread_local! {
     /// The per-thread participant for the default garbage collector.
-    static HANDLE: LocalHandle = default_collector().register();
+    static HANDLE: LocalHandle = DEFAULT_COLLECTOR.register();
 }
 
 /// Pins the current thread.
