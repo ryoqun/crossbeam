@@ -1189,12 +1189,12 @@ impl<T> Block<T> {
 }
 
 /// A position in a queue.
-struct Position<T> {
+struct Position<T, C> {
     /// The index in the queue.
     index: AtomicUsize,
 
     /// The block in the linked list.
-    block: AtomicPtr<Block<T>>,
+    block: AtomicPtr<Block<T, C>>,
 }
 
 /// An injector queue.
