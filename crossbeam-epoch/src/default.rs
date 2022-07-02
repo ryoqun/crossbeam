@@ -29,7 +29,7 @@ thread_local! {
 /// Pins the current thread.
 #[inline]
 pub fn pin() -> Guard {
-    with_default_handle(|handle| handle.pin())
+    DefaultCollector::with_handle(|handle| handle.pin())
 }
 
 /// Returns `true` if the current thread is pinned.
