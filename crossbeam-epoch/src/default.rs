@@ -64,6 +64,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn handle() -> u8 {
+        DEFAULT_HANDLE
     }
 
     fn with_handle<F, R>(mut f: F) -> R
