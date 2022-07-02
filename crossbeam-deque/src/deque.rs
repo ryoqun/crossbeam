@@ -23,7 +23,7 @@ const FLUSH_THRESHOLD_BYTES: usize = 1 << 10;
 ///
 /// This is just a pointer to the buffer and its length - dropping an instance of this struct will
 /// *not* deallocate the buffer.
-struct Buffer<T> {
+struct Buffer<T, C> {
     /// Pointer to the allocated memory.
     ptr: *mut T,
 
