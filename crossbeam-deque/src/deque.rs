@@ -1215,15 +1215,15 @@ struct Position<T> {
 /// assert_eq!(q.steal(), Steal::Success(2));
 /// assert_eq!(q.steal(), Steal::Empty);
 /// ```
-pub struct Injector<T> {
+pub struct Injector<T, C> {
     /// The head of the queue.
-    head: CachePadded<Position<T>>,
+    head: CachePadded<Position<T, C>>,
 
     /// The tail of the queue.
-    tail: CachePadded<Position<T>>,
+    tail: CachePadded<Position<T, C>>,
 
     /// Indicates that dropping a `Injector<T>` may drop values of type `T`.
-    _marker: PhantomData<T>,
+    _marker: PhantomData<T, C>,
 }
 
 unsafe impl<T: Send> Send for Injector<T> {}
