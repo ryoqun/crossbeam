@@ -531,7 +531,7 @@ impl<T, C> Worker<T, C> {
     }
 }
 
-impl<T> fmt::Debug for Worker<T> {
+impl<T, C> fmt::Debug for Worker<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
