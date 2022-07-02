@@ -23,7 +23,7 @@ const FLUSH_THRESHOLD_BYTES: usize = 1 << 10;
 ///
 /// This is just a pointer to the buffer and its length - dropping an instance of this struct will
 /// *not* deallocate the buffer.
-struct Buffer<T> {
+struct Buffer<T, C> {
     /// Pointer to the allocated memory.
     ptr: *mut T,
 
@@ -31,11 +31,11 @@ struct Buffer<T> {
     cap: usize,
 }
 
-unsafe impl<T> Send for Buffer<T> {}
+unsafe impl<T, C> Send for Buffer<T, C> {}
 
-impl<T> Buffer<T> {
+impl<T, C> Buffer<T, C> {
     /// Allocates a new buffer with the specified capacity.
-    fn alloc(cap: usize) -> Buffer<T> {
+    fn alloc(cap: usize) -> Buffer<T, C> {
         debug_assert_eq!(cap, cap.next_power_of_two());
 
         let mut v = Vec::with_capacity(cap);
@@ -77,8 +77,8 @@ impl<T> Buffer<T> {
     }
 }
 
-impl<T> Clone for Buffer<T> {
-    fn clone(&self) -> Buffer<T> {
+impl<T, C> Clone for Buffer<T, C> {
+    fn clone(&self) -> Buffer<T, C> {
         Buffer {
             ptr: self.ptr,
             cap: self.cap,
@@ -86,7 +86,7 @@ impl<T> Clone for Buffer<T> {
     }
 }
 
-impl<T> Copy for Buffer<T> {}
+impl<T, C> Copy for Buffer<T, C> {}
 
 /// Internal queue data shared between the worker and stealers.
 ///
@@ -101,7 +101,7 @@ impl<T> Copy for Buffer<T> {}
 /// [chase-lev]: https://dl.acm.org/citation.cfm?id=1073974
 /// [weak-mem]: https://dl.acm.org/citation.cfm?id=2442524
 /// [checker]: https://dl.acm.org/citation.cfm?id=2509514
-struct Inner<T> {
+struct Inner<T, C> {
     /// The front index.
     front: AtomicIsize,
 
@@ -109,10 +109,10 @@ struct Inner<T> {
     back: AtomicIsize,
 
     /// The underlying buffer.
-    buffer: CachePadded<Atomic<Buffer<T>>>,
+    buffer: CachePadded<Atomic<Buffer<T, C>>>,
 }
 
-impl<T> Drop for Inner<T> {
+impl<T, C> Drop for Inner<T, C> {
     fn drop(&mut self) {
         // Load the back index, front index, and buffer.
         let b = self.back.load(Ordering::Relaxed);
@@ -184,12 +184,12 @@ enum Flavor {
 /// assert_eq!(w.pop(), Some(3));
 /// assert_eq!(w.pop(), Some(2));
 /// ```
-pub struct Worker<T> {
+pub struct Worker<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T>>>,
+    inner: Arc<CachePadded<Inner<T, C>>>,
 
     /// A copy of `inner.buffer` for quick access.
-    buffer: Cell<Buffer<T>>,
+    buffer: Cell<Buffer<T, C>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
@@ -198,9 +198,9 @@ pub struct Worker<T> {
     _marker: PhantomData<*mut ()>, // !Send + !Sync
 }
 
-unsafe impl<T: Send> Send for Worker<T> {}
+unsafe impl<T: Send, C> Send for Worker<T, C> {}
 
-impl<T> Worker<T> {
+impl<T, C> Worker<T, C> {
     /// Creates a FIFO worker queue.
     ///
     /// Tasks are pushed and popped from opposite ends.
@@ -212,7 +212,7 @@ impl<T> Worker<T> {
     ///
     /// let w = Worker::<i32>::new_fifo();
     /// ```
-    pub fn new_fifo() -> Worker<T> {
+    pub fn new_fifo() -> Worker<T, C> {
         let buffer = Buffer::alloc(MIN_CAP);
 
         let inner = Arc::new(CachePadded::new(Inner {
@@ -240,7 +240,7 @@ impl<T> Worker<T> {
     ///
     /// let w = Worker::<i32>::new_lifo();
     /// ```
-    pub fn new_lifo() -> Worker<T> {
+    pub fn new_lifo() -> Worker<T, C> {
         let buffer = Buffer::alloc(MIN_CAP);
 
         let inner = Arc::new(CachePadded::new(Inner {
@@ -269,7 +269,7 @@ impl<T> Worker<T> {
     /// let w = Worker::<i32>::new_lifo();
     /// let s = w.stealer();
     /// ```
-    pub fn stealer(&self) -> Stealer<T> {
+    pub fn stealer(&self) -> Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
@@ -531,7 +531,7 @@ impl<T> Worker<T> {
     }
 }
 
-impl<T> fmt::Debug for Worker<T> {
+impl<T, C> fmt::Debug for Worker<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
@@ -557,18 +557,18 @@ impl<T> fmt::Debug for Worker<T> {
 /// assert_eq!(s.steal(), Steal::Success(2));
 /// assert_eq!(s.steal(), Steal::Empty);
 /// ```
-pub struct Stealer<T> {
+pub struct Stealer<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T>>>,
+    inner: Arc<CachePadded<Inner<T, C>>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
 }
 
-unsafe impl<T: Send> Send for Stealer<T> {}
-unsafe impl<T: Send> Sync for Stealer<T> {}
+unsafe impl<T: Send, C> Send for Stealer<T, C> {}
+unsafe impl<T: Send, C> Sync for Stealer<T, C> {}
 
-impl<T> Stealer<T> {
+impl<T, C> Stealer<T, C> {
     /// Returns `true` if the queue is empty.
     ///
     /// ```
@@ -692,7 +692,7 @@ impl<T> Stealer<T> {
     /// assert_eq!(w2.pop(), Some(1));
     /// assert_eq!(w2.pop(), Some(2));
     /// ```
-    pub fn steal_batch(&self, dest: &Worker<T>) -> Steal<()> {
+    pub fn steal_batch(&self, dest: &Worker<T, C>) -> Steal<()> {
         if Arc::ptr_eq(&self.inner, &dest.inner) {
             if dest.is_empty() {
                 return Steal::Empty;
@@ -891,7 +891,7 @@ impl<T> Stealer<T> {
     /// assert_eq!(s.steal_batch_and_pop(&w2), Steal::Success(1));
     /// assert_eq!(w2.pop(), Some(2));
     /// ```
-    pub fn steal_batch_and_pop(&self, dest: &Worker<T>) -> Steal<T> {
+    pub fn steal_batch_and_pop(&self, dest: &Worker<T, C>) -> Steal<T> {
         if Arc::ptr_eq(&self.inner, &dest.inner) {
             match dest.pop() {
                 None => return Steal::Empty,
@@ -1081,8 +1081,8 @@ impl<T> Stealer<T> {
     }
 }
 
-impl<T> Clone for Stealer<T> {
-    fn clone(&self) -> Stealer<T> {
+impl<T, C> Clone for Stealer<T, C> {
+    fn clone(&self) -> Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
@@ -1090,7 +1090,7 @@ impl<T> Clone for Stealer<T> {
     }
 }
 
-impl<T> fmt::Debug for Stealer<T> {
+impl<T, C> fmt::Debug for Stealer<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Stealer { .. }")
     }
@@ -1189,12 +1189,12 @@ impl<T> Block<T> {
 }
 
 /// A position in a queue.
-struct Position<T> {
+struct Position<T, C> {
     /// The index in the queue.
     index: AtomicUsize,
 
     /// The block in the linked list.
-    block: AtomicPtr<Block<T>>,
+    block: AtomicPtr<Block<T, C>>,
 }
 
 /// An injector queue.
@@ -1215,21 +1215,21 @@ struct Position<T> {
 /// assert_eq!(q.steal(), Steal::Success(2));
 /// assert_eq!(q.steal(), Steal::Empty);
 /// ```
-pub struct Injector<T> {
+pub struct Injector<T, C> {
     /// The head of the queue.
-    head: CachePadded<Position<T>>,
+    head: CachePadded<Position<T, C>>,
 
     /// The tail of the queue.
-    tail: CachePadded<Position<T>>,
+    tail: CachePadded<Position<T, C>>,
 
     /// Indicates that dropping a `Injector<T>` may drop values of type `T`.
-    _marker: PhantomData<T>,
+    _marker: PhantomData<T, C>,
 }
 
-unsafe impl<T: Send> Send for Injector<T> {}
-unsafe impl<T: Send> Sync for Injector<T> {}
+unsafe impl<T: Send, C> Send for Injector<T, C> {}
+unsafe impl<T: Send, C> Sync for Injector<T, C> {}
 
-impl<T> Default for Injector<T> {
+impl<T, C> Default for Injector<T, C> {
     fn default() -> Self {
         let block = Box::into_raw(Box::new(Block::<T>::new()));
         Self {
@@ -1246,7 +1246,7 @@ impl<T> Default for Injector<T> {
     }
 }
 
-impl<T> Injector<T> {
+impl<T, C> Injector<T, C> {
     /// Creates a new injector queue.
     ///
     /// # Examples
@@ -1256,7 +1256,7 @@ impl<T> Injector<T> {
     ///
     /// let q = Injector::<i32>::new();
     /// ```
-    pub fn new() -> Injector<T> {
+    pub fn new() -> Injector<T, C> {
         Self::default()
     }
 
@@ -1445,7 +1445,7 @@ impl<T> Injector<T> {
     /// assert_eq!(w.pop(), Some(1));
     /// assert_eq!(w.pop(), Some(2));
     /// ```
-    pub fn steal_batch(&self, dest: &Worker<T>) -> Steal<()> {
+    pub fn steal_batch(&self, dest: &Worker<T, C>) -> Steal<()> {
         let mut head;
         let mut block;
         let mut offset;
@@ -1604,7 +1604,7 @@ impl<T> Injector<T> {
     /// assert_eq!(q.steal_batch_and_pop(&w), Steal::Success(1));
     /// assert_eq!(w.pop(), Some(2));
     /// ```
-    pub fn steal_batch_and_pop(&self, dest: &Worker<T>) -> Steal<T> {
+    pub fn steal_batch_and_pop(&self, dest: &Worker<T, C>) -> Steal<T> {
         let mut head;
         let mut block;
         let mut offset;
@@ -1818,7 +1818,7 @@ impl<T> Injector<T> {
     }
 }
 
-impl<T> Drop for Injector<T> {
+impl<T, C> Drop for Injector<T, C> {
     fn drop(&mut self) {
         let mut head = self.head.index.load(Ordering::Relaxed);
         let mut tail = self.tail.index.load(Ordering::Relaxed);
@@ -1854,7 +1854,7 @@ impl<T> Drop for Injector<T> {
     }
 }
 
-impl<T> fmt::Debug for Injector<T> {
+impl<T, C> fmt::Debug for Injector<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
