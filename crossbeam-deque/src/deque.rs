@@ -1445,7 +1445,7 @@ impl<T> Injector<T> {
     /// assert_eq!(w.pop(), Some(1));
     /// assert_eq!(w.pop(), Some(2));
     /// ```
-    pub fn steal_batch(&self, dest: &Worker<T>) -> Steal<()> {
+    pub fn steal_batch(&self, dest: &Worker<T, C>) -> Steal<()> {
         let mut head;
         let mut block;
         let mut offset;
