@@ -70,6 +70,9 @@ trait CustomCollector {
 struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
+    fn collector() -> &'static Collector {
+        default_collector()
+    }
 }
 
 #[cfg(all(test, not(crossbeam_loom)))]
