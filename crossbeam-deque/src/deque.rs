@@ -33,9 +33,9 @@ struct Buffer<T, C> {
 
 unsafe impl<T> Send for Buffer<T> {}
 
-impl<T> Buffer<T> {
+impl<T, C> Buffer<T, C> {
     /// Allocates a new buffer with the specified capacity.
-    fn alloc(cap: usize) -> Buffer<T> {
+    fn alloc(cap: usize) -> Buffer<T, C> {
         debug_assert_eq!(cap, cap.next_power_of_two());
 
         let mut v = Vec::with_capacity(cap);
