@@ -198,7 +198,7 @@ pub struct Worker<T, C> {
     _marker: PhantomData<*mut ()>, // !Send + !Sync
 }
 
-unsafe impl<T: Send> Send for Worker<T, C> {}
+unsafe impl<T: Send, C> Send for Worker<T, C> {}
 
 impl<T, C> Worker<T, C> {
     /// Creates a FIFO worker queue.
