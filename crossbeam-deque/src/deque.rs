@@ -112,7 +112,7 @@ struct Inner<T, C> {
     buffer: CachePadded<Atomic<Buffer<T, C>>>,
 }
 
-impl<T> Drop for Inner<T> {
+impl<T, C> Drop for Inner<T, C> {
     fn drop(&mut self) {
         // Load the back index, front index, and buffer.
         let b = self.back.load(Ordering::Relaxed);
