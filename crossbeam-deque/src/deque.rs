@@ -86,7 +86,7 @@ impl<T> Clone for Buffer<T> {
     }
 }
 
-impl<T> Copy for Buffer<T> {}
+impl<T, C> Copy for Buffer<T, C> {}
 
 /// Internal queue data shared between the worker and stealers.
 ///
