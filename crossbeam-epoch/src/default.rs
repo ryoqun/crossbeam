@@ -54,7 +54,7 @@ where
 }
 
 #[inline]
-fn with_default_handle_traited<C, F, R>(mut f: F) -> R
+fn with_default_handle_traited<C: CustomCollector, F, R>(mut f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
 {
