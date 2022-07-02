@@ -21,11 +21,6 @@ loom::lazy_static! {
     static ref DEFAULT_COLLECTOR: Collector = Collector::new();
 }
 
-/// Returns the default global collector.
-pub fn default_collector() -> &'static Collector {
-    &DEFAULT_COLLECTOR
-}
-
 thread_local! {
     /// The per-thread participant for the default garbage collector.
     static HANDLE: LocalHandle = DEFAULT_COLLECTOR.register();
@@ -60,7 +55,7 @@ struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
     fn collector() -> &'static Collector {
-        default_collector()
+        &DEFAULT_COLLECTOR
     }
 
     fn with_handle<F, R>(mut f: F) -> R 
