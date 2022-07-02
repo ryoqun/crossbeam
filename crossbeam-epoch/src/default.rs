@@ -48,6 +48,9 @@ where
 
 trait CustomCollector {
     fn collector() -> &'static Collector;
+    fn handle() -> u8 {
+    }
+
     fn with_handle<F, R>(f: F) -> R
     where
         F: FnMut(&LocalHandle) -> R;
@@ -58,6 +61,9 @@ struct DefaultCollector;
 impl CustomCollector for DefaultCollector {
     fn collector() -> &'static Collector {
         &DEFAULT_COLLECTOR
+    }
+
+    fn handle() -> u8 {
     }
 
     fn with_handle<F, R>(mut f: F) -> R
