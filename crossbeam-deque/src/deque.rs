@@ -1223,7 +1223,8 @@ pub struct Injector<T, C> {
     tail: CachePadded<Position<T, C>>,
 
     /// Indicates that dropping a `Injector<T>` may drop values of type `T`.
-    _marker: PhantomData<T, C>,
+    _marker_t: PhantomData<T>,
+    _marker_c: PhantomData<C>,
 }
 
 unsafe impl<T: Send, C> Send for Injector<T, C> {}
