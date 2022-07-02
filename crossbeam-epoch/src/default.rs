@@ -75,7 +75,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn local_handle() -> &'static LocalHandle {
-        HANDLE.try_with(|h| h)
+        HANDLE.try_with(|h| h).unwrap()
     }
 }
 
