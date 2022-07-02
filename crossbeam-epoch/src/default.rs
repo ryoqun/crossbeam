@@ -50,9 +50,14 @@ trait CustomCollector {
     fn collector() -> &'static Collector;
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn with_handle<F, R>(f: F) -> R
+    fn with_handle<F, R>(mut f: F) -> R
     where
-        F: FnMut(&LocalHandle) -> R;
+        F: FnMut(&LocalHandle) -> R,
+    {
+        Self::handle()
+            .try_with(|h| f(h))
+            .unwrap_or_else(|_| f(&Self::collector().register()))
+    }
 }
 
 struct DefaultCollector;
@@ -64,15 +69,6 @@ impl CustomCollector for DefaultCollector {
 
     fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
         &DEFAULT_HANDLE
-    }
-
-    fn with_handle<F, R>(mut f: F) -> R
-    where
-        F: FnMut(&LocalHandle) -> R,
-    {
-        Self::handle()
-            .try_with(|h| f(h))
-            .unwrap_or_else(|_| f(&Self::collector().register()))
     }
 }
 
