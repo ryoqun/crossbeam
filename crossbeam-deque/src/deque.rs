@@ -1090,7 +1090,7 @@ impl<T, C> Clone for Stealer<T, C> {
     }
 }
 
-impl<T> fmt::Debug for Stealer<T> {
+impl<T, C> fmt::Debug for Stealer<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Stealer { .. }")
     }
