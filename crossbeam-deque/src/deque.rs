@@ -1854,7 +1854,7 @@ impl<T> Drop for Injector<T> {
     }
 }
 
-impl<T> fmt::Debug for Injector<T> {
+impl<T, C> fmt::Debug for Injector<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
