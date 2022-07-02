@@ -1226,10 +1226,10 @@ pub struct Injector<T, C> {
     _marker: PhantomData<T, C>,
 }
 
-unsafe impl<T: Send> Send for Injector<T> {}
-unsafe impl<T: Send> Sync for Injector<T> {}
+unsafe impl<T: Send, C> Send for Injector<T, C> {}
+unsafe impl<T: Send, C> Sync for Injector<T, C> {}
 
-impl<T> Default for Injector<T> {
+impl<T, C> Default for Injector<T, C> {
     fn default() -> Self {
         let block = Box::into_raw(Box::new(Block::<T>::new()));
         Self {
