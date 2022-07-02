@@ -48,7 +48,7 @@ where
 
 trait CustomCollector {
     fn collector() -> &'static Collector;
-    fn handle() -> LocalKey<LocalHandle>; 
+    fn handle() -> std::thread::LocalKey<LocalHandle>; 
 
     fn with_handle<F, R>(f: F) -> R
     where
