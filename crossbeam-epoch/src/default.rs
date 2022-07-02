@@ -62,7 +62,7 @@ impl CustomCollector for DefaultCollector {
         &DEFAULT_COLLECTOR
     }
 
-    fn handle() -> u8 {
+    fn handle() -> std::thread::LocalKey<LocalHandle> {
         DEFAULT_HANDLE
     }
 
