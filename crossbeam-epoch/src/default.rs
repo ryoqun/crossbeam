@@ -53,14 +53,6 @@ where
         .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
 }
 
-#[inline]
-fn with_default_handle_traited<C: CustomCollector, F, R>(mut f: F) -> R
-where
-    F: FnMut(&LocalHandle) -> R,
-{
-    f(C::local_handle())
-}
-
 trait CustomCollector {
     fn collector() -> &'static Collector;
 
@@ -75,7 +67,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn with_handle<F, R>(f: impl FnMut(&LocalHandle) -> R) -> R {
-        panic!();//HANDLE.try_with(|h| h).unwrap()
+        HANDLE.try_with(|h| f(h)).unwrap()
     }
 }
 
