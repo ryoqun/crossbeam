@@ -269,7 +269,7 @@ impl<T, C> Worker<T, C> {
     /// let w = Worker::<i32>::new_lifo();
     /// let s = w.stealer();
     /// ```
-    pub fn stealer(&self) -> Stealer<T> {
+    pub fn stealer(&self) -> Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
