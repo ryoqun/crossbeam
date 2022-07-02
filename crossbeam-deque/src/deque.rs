@@ -565,10 +565,10 @@ pub struct Stealer<T, C> {
     flavor: Flavor,
 }
 
-unsafe impl<T: Send> Send for Stealer<T> {}
-unsafe impl<T: Send> Sync for Stealer<T> {}
+unsafe impl<T: Send, C> Send for Stealer<T, C> {}
+unsafe impl<T: Send, C> Sync for Stealer<T, C> {}
 
-impl<T> Stealer<T> {
+impl<T, C> Stealer<T, C> {
     /// Returns `true` if the queue is empty.
     ///
     /// ```
