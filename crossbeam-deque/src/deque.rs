@@ -184,12 +184,12 @@ enum Flavor {
 /// assert_eq!(w.pop(), Some(3));
 /// assert_eq!(w.pop(), Some(2));
 /// ```
-pub struct Worker<T> {
+pub struct Worker<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T>>>,
+    inner: Arc<CachePadded<Inner<T, C>>>,
 
     /// A copy of `inner.buffer` for quick access.
-    buffer: Cell<Buffer<T>>,
+    buffer: Cell<Buffer<T, C>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
@@ -198,9 +198,9 @@ pub struct Worker<T> {
     _marker: PhantomData<*mut ()>, // !Send + !Sync
 }
 
-unsafe impl<T: Send> Send for Worker<T> {}
+unsafe impl<T: Send> Send for Worker<T, C> {}
 
-impl<T> Worker<T> {
+impl<T, C> Worker<T, C> {
     /// Creates a FIFO worker queue.
     ///
     /// Tasks are pushed and popped from opposite ends.
