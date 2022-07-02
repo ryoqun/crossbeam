@@ -212,7 +212,7 @@ impl<T, C> Worker<T, C> {
     ///
     /// let w = Worker::<i32>::new_fifo();
     /// ```
-    pub fn new_fifo() -> Worker<T> {
+    pub fn new_fifo() -> Worker<T, C> {
         let buffer = Buffer::alloc(MIN_CAP);
 
         let inner = Arc::new(CachePadded::new(Inner {
