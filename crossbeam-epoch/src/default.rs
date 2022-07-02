@@ -66,7 +66,7 @@ impl CustomCollector for DefaultCollector {
         default_collector()
     }
 
-    fn with_handle<F, R>(f: impl FnMut(&LocalHandle) -> R) -> R {
+    fn with_handle<F, R>(mut f: impl FnMut(&LocalHandle) -> R) -> R {
         HANDLE.try_with(|h| f(h)).unwrap()
     }
 }
