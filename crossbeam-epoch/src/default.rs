@@ -12,45 +12,68 @@ use once_cell::sync::Lazy;
 
 /// The global data for the default garbage collector.
 #[cfg(not(crossbeam_loom))]
-static COLLECTOR: Lazy<Collector> = Lazy::new(Collector::new);
+static DEFAULT_COLLECTOR: Lazy<Collector> = Lazy::new(Collector::new);
 // FIXME: loom does not currently provide the equivalent of Lazy:
 // https://github.com/tokio-rs/loom/issues/263
 #[cfg(crossbeam_loom)]
 loom::lazy_static! {
     /// The global data for the default garbage collector.
-    static ref COLLECTOR: Collector = Collector::new();
+    static ref DEFAULT_COLLECTOR: Collector = Collector::new();
+}
+
+/// Returns the default global collector.
+pub fn default_collector() -> &'static Collector {
+    &DEFAULT_COLLECTOR
 }
 
 thread_local! {
     /// The per-thread participant for the default garbage collector.
-    static HANDLE: LocalHandle = COLLECTOR.register();
+    static HANDLE: LocalHandle = default_collector().register();
 }
 
 /// Pins the current thread.
 #[inline]
 pub fn pin() -> Guard {
-    with_handle(|handle| handle.pin())
+    with_default_handle(|handle| handle.pin())
 }
 
 /// Returns `true` if the current thread is pinned.
 #[inline]
 pub fn is_pinned() -> bool {
-    with_handle(|handle| handle.is_pinned())
-}
-
-/// Returns the default global collector.
-pub fn default_collector() -> &'static Collector {
-    &COLLECTOR
+    with_default_handle(|handle| handle.is_pinned())
 }
 
 #[inline]
-fn with_handle<F, R>(mut f: F) -> R
+fn with_default_handle<F, R>(mut f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
 {
     HANDLE
         .try_with(|h| f(h))
-        .unwrap_or_else(|_| f(&COLLECTOR.register()))
+        .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
+}
+
+#[inline]
+fn with_default_handle_traited<C: CustomCollector, F, R>(mut f: F) -> R
+where
+    F: FnMut(&LocalHandle) -> R,
+{
+    f(C::local_handle())
+}
+
+trait CustomCollector {
+    fn collector() -> &'static Collector {
+        panic!()
+    }
+
+    fn local_handle() -> &'static LocalHandle {
+        panic!()
+    }
+}
+
+struct DefaultCollector;
+
+impl CustomCollector for DefaultCollector {
 }
 
 #[cfg(all(test, not(crossbeam_loom)))]
