@@ -557,9 +557,9 @@ impl<T, C> fmt::Debug for Worker<T, C> {
 /// assert_eq!(s.steal(), Steal::Success(2));
 /// assert_eq!(s.steal(), Steal::Empty);
 /// ```
-pub struct Stealer<T> {
+pub struct Stealer<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T>>>,
+    inner: Arc<CachePadded<Inner<T, C>>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
