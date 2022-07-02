@@ -35,15 +35,7 @@ pub fn pin() -> Guard {
 /// Returns `true` if the current thread is pinned.
 #[inline]
 pub fn is_pinned() -> bool {
-    with_default_handle(|handle| handle.is_pinned())
-}
-
-#[inline]
-fn with_default_handle<F, R>(f: F) -> R
-where
-    F: FnMut(&LocalHandle) -> R,
-{
-    DefaultCollector::with_handle::<F, R>(f)
+    DefaultCollector::with_handle(|handle| handle.is_pinned())
 }
 
 trait CustomCollector {
