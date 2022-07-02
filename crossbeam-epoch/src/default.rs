@@ -48,7 +48,19 @@ fn with_default_handle<F, R>(mut f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
 {
-    DefaultCollector::with_handle(f)
+    HANDLE
+        .try_with(|h| f(h))
+        .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
+}
+
+#[inline]
+fn with_default_handle_traited<F, R>(mut f: F) -> R
+where
+    F: FnMut(&LocalHandle) -> R,
+{
+    HANDLE
+        .try_with(|h| f(h))
+        .unwrap_or_else(|_| f(&DEFAULT_COLLECTOR.register()))
 }
 
 trait CustomCollector {
