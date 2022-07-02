@@ -1246,7 +1246,7 @@ impl<T> Default for Injector<T> {
     }
 }
 
-impl<T> Injector<T> {
+impl<T, C> Injector<T, C> {
     /// Creates a new injector queue.
     ///
     /// # Examples
