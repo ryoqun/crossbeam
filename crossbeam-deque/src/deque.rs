@@ -101,7 +101,7 @@ impl<T> Copy for Buffer<T> {}
 /// [chase-lev]: https://dl.acm.org/citation.cfm?id=1073974
 /// [weak-mem]: https://dl.acm.org/citation.cfm?id=2442524
 /// [checker]: https://dl.acm.org/citation.cfm?id=2509514
-struct Inner<T> {
+struct Inner<T, C> {
     /// The front index.
     front: AtomicIsize,
 
@@ -109,7 +109,7 @@ struct Inner<T> {
     back: AtomicIsize,
 
     /// The underlying buffer.
-    buffer: CachePadded<Atomic<Buffer<T>>>,
+    buffer: CachePadded<Atomic<Buffer<T, C>>>,
 }
 
 impl<T> Drop for Inner<T> {
