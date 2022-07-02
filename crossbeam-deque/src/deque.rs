@@ -891,7 +891,7 @@ impl<T> Stealer<T> {
     /// assert_eq!(s.steal_batch_and_pop(&w2), Steal::Success(1));
     /// assert_eq!(w2.pop(), Some(2));
     /// ```
-    pub fn steal_batch_and_pop(&self, dest: &Worker<T>) -> Steal<T> {
+    pub fn steal_batch_and_pop(&self, dest: &Worker<T, C>) -> Steal<T> {
         if Arc::ptr_eq(&self.inner, &dest.inner) {
             match dest.pop() {
                 None => return Steal::Empty,
