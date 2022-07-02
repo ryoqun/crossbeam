@@ -1818,7 +1818,7 @@ impl<T, C> Injector<T, C> {
     }
 }
 
-impl<T> Drop for Injector<T> {
+impl<T, C> Drop for Injector<T, C> {
     fn drop(&mut self) {
         let mut head = self.head.index.load(Ordering::Relaxed);
         let mut tail = self.tail.index.load(Ordering::Relaxed);
