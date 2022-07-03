@@ -1863,7 +1863,7 @@ impl<T, C: CustomCollector> Drop for Injector<T, C> {
     }
 }
 
-impl<T, C> fmt::Debug for Injector<T, C> {
+impl<T, C: CustomCollector> fmt::Debug for Injector<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
