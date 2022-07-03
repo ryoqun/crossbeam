@@ -1141,17 +1141,17 @@ impl<T> Slot<T> {
 /// A block in a linked list.
 ///
 /// Each block in the list can hold up to `BLOCK_CAP` values.
-struct Block<T, C> {
+struct Block<T> {
     /// The next block in the linked list.
-    next: AtomicPtr<Block<T, C>>,
+    next: AtomicPtr<Block<T>>,
 
     /// Slots for values.
     slots: [Slot<T>; BLOCK_CAP],
 }
 
-impl<T, C> Block<T, C> {
+impl<T> Block<T> {
     /// Creates an empty block that starts at `start_index`.
-    fn new() -> Block<T, C> {
+    fn new() -> Block<T> {
         // SAFETY: This is safe because:
         //  [1] `Block::next` (AtomicPtr) may be safely zero initialized.
         //  [2] `Block::slots` (Array) may be safely zero initialized because of [3, 4].
@@ -1162,7 +1162,7 @@ impl<T, C> Block<T, C> {
     }
 
     /// Waits until the next pointer is set.
-    fn wait_next(&self) -> *mut Block<T, C> {
+    fn wait_next(&self) -> *mut Block<T> {
         let backoff = Backoff::new();
         loop {
             let next = self.next.load(Ordering::Acquire);
@@ -1174,7 +1174,7 @@ impl<T, C> Block<T, C> {
     }
 
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
-    unsafe fn destroy(this: *mut Block<T, C>, count: usize) {
+    unsafe fn destroy(this: *mut Block<T>, count: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in (0..count).rev() {
@@ -1195,12 +1195,12 @@ impl<T, C> Block<T, C> {
 }
 
 /// A position in a queue.
-struct Position<T, C> {
+struct Position<T> {
     /// The index in the queue.
     index: AtomicUsize,
 
     /// The block in the linked list.
-    block: AtomicPtr<Block<T, C>>,
+    block: AtomicPtr<Block<T>>,
 }
 
 /// An injector queue.
@@ -1238,7 +1238,7 @@ unsafe impl<T: Send, C: CustomCollector> Sync for Injector<T, C> {}
 
 impl<T, C: CustomCollector> Default for Injector<T, C> {
     fn default() -> Self {
-        let block = Box::into_raw(Box::new(Block::<T, C>::new()));
+        let block = Box::into_raw(Box::new(Block::<T>::new()));
         Self {
             head: CachePadded::new(Position {
                 block: AtomicPtr::new(block),
@@ -1300,7 +1300,7 @@ impl<T, C: CustomCollector> Injector<T, C> {
             // If we're going to have to install the next block, allocate it in advance in order to
             // make the wait for other threads as short as possible.
             if offset + 1 == BLOCK_CAP && next_block.is_none() {
-                next_block = Some(Box::new(Block::<T, C>::new()));
+                next_block = Some(Box::new(Block::<T>::new()));
             }
 
             let new_tail = tail + (1 << SHIFT);
