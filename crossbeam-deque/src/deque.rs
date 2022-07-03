@@ -276,6 +276,7 @@ impl<T, C: epoch::CustomCollector> Worker<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
+            marker: PhantomData,
         }
     }
 
