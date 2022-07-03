@@ -77,7 +77,7 @@ impl<T> Buffer<T> {
     }
 }
 
-impl<T, C> Clone for Buffer<T> {
+impl<T> Clone for Buffer<T> {
     fn clone(&self) -> Buffer<T> {
         Buffer {
             ptr: self.ptr,
