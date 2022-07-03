@@ -23,27 +23,26 @@ const FLUSH_THRESHOLD_BYTES: usize = 1 << 10;
 ///
 /// This is just a pointer to the buffer and its length - dropping an instance of this struct will
 /// *not* deallocate the buffer.
-struct Buffer<T, C> {
+struct Buffer<T> {
     /// Pointer to the allocated memory.
     ptr: *mut T,
 
     /// Capacity of the buffer. Always a power of two.
     cap: usize,
-    _marker: PhantomData<C>,
 }
 
-unsafe impl<T, C> Send for Buffer<T, C> {}
+unsafe impl<T, C> Send for Buffer<T> {}
 
-impl<T, C> Buffer<T, C> {
+impl<T, C> Buffer<T> {
     /// Allocates a new buffer with the specified capacity.
-    fn alloc(cap: usize) -> Buffer<T, C> {
+    fn alloc(cap: usize) -> Buffer<T> {
         debug_assert_eq!(cap, cap.next_power_of_two());
 
         let mut v = Vec::with_capacity(cap);
         let ptr = v.as_mut_ptr();
         mem::forget(v);
 
-        Buffer { ptr, cap, _marker: Default::default() }
+        Buffer { ptr, cap, }
     }
 
     /// Deallocates the buffer.
@@ -78,17 +77,16 @@ impl<T, C> Buffer<T, C> {
     }
 }
 
-impl<T, C> Clone for Buffer<T, C> {
-    fn clone(&self) -> Buffer<T, C> {
+impl<T, C> Clone for Buffer<T> {
+    fn clone(&self) -> Buffer<T> {
         Buffer {
             ptr: self.ptr,
             cap: self.cap,
-            _marker: Default::default(),
         }
     }
 }
 
-impl<T, C> Copy for Buffer<T, C> {}
+impl<T> Copy for Buffer<T> {}
 
 /// Internal queue data shared between the worker and stealers.
 ///
