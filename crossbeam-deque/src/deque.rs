@@ -1135,12 +1135,12 @@ impl<T> Slot<T> {
 /// A block in a linked list.
 ///
 /// Each block in the list can hold up to `BLOCK_CAP` values.
-struct Block<T> {
+struct Block<T, C> {
     /// The next block in the linked list.
-    next: AtomicPtr<Block<T>>,
+    next: AtomicPtr<Block<T, C>>,
 
     /// Slots for values.
-    slots: [Slot<T>; BLOCK_CAP],
+    slots: [Slot<T, C>; BLOCK_CAP],
 }
 
 impl<T> Block<T> {
