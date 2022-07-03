@@ -1143,9 +1143,9 @@ struct Block<T, C> {
     slots: [Slot<T, C>; BLOCK_CAP],
 }
 
-impl<T> Block<T> {
+impl<T, C> Block<T, C> {
     /// Creates an empty block that starts at `start_index`.
-    fn new() -> Block<T> {
+    fn new() -> Block<T, C> {
         // SAFETY: This is safe because:
         //  [1] `Block::next` (AtomicPtr) may be safely zero initialized.
         //  [2] `Block::slots` (Array) may be safely zero initialized because of [3, 4].
