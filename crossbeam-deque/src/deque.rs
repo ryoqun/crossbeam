@@ -1235,7 +1235,7 @@ unsafe impl<T: Send, C> Sync for Injector<T, C> {}
 
 impl<T, C> Default for Injector<T, C> {
     fn default() -> Self {
-        let block = Box::into_raw(Box::new(Block::<T>::new()));
+        let block = Box::into_raw(Box::new(Block::<T, C>::new()));
         Self {
             head: CachePadded::new(Position {
                 block: AtomicPtr::new(block),
