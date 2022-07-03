@@ -1296,7 +1296,7 @@ impl<T, C> Injector<T, C> {
             // If we're going to have to install the next block, allocate it in advance in order to
             // make the wait for other threads as short as possible.
             if offset + 1 == BLOCK_CAP && next_block.is_none() {
-                next_block = Some(Box::new(Block::<T>::new()));
+                next_block = Some(Box::new(Block::<T, C>::new()));
             }
 
             let new_tail = tail + (1 << SHIFT);
