@@ -52,7 +52,7 @@ trait CustomCollector {
     }
 }
 
-struct DefaultCollector;
+pub struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
     fn collector() -> &'static Collector {
