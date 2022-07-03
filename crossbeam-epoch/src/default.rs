@@ -45,6 +45,7 @@ pub trait CustomCollector {
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
+    /// wwww
     fn with_handle<F, R>(mut f: F) -> R
     where
         F: FnMut(&LocalHandle) -> R,
@@ -56,6 +57,7 @@ pub trait CustomCollector {
 }
 
 /// aaaa
+#[derive(Debug)]
 pub struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
