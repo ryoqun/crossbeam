@@ -913,7 +913,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
             atomic::fence(Ordering::SeqCst);
         }
 
-        let guard = &epoch::pin::<epoch::DefaultCollector>();
+        let guard = &epoch::pin::<C>();
 
         // Load the back index.
         let b = self.inner.back.load(Ordering::Acquire);
