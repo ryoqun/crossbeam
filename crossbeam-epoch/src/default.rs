@@ -38,6 +38,7 @@ pub fn is_pinned<C: CustomCollector>() -> bool {
     DefaultCollector::with_handle(|handle| handle.is_pinned())
 }
 
+/// ccccc
 pub trait CustomCollector {
     /// cccc
     fn collector() -> &'static Collector;
