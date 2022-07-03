@@ -202,7 +202,7 @@ pub struct Worker<T, C> {
 
 unsafe impl<T: Send, C> Send for Worker<T, C> {}
 
-impl<T, C: CustomCollector> Worker<T, C> {
+impl<T, C: epoch::CustomCollector> Worker<T, C> {
     /// Creates a FIFO worker queue.
     ///
     /// Tasks are pushed and popped from opposite ends.
