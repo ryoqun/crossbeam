@@ -107,6 +107,6 @@ cfg_if! {
 
         mod deque;
         pub use crate::deque::{Injector, Steal, Stealer, Worker};
-        pub use crate::epoch::DefaultCollector;
+        pub use crate::epoch::{DefaultCollector, CustomCollector};
     }
 }
