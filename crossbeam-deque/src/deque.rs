@@ -294,7 +294,7 @@ impl<T, C> Worker<T, C> {
             i = i.wrapping_add(1);
         }
 
-        let guard = &epoch::pin::<DefaultCollector>();
+        let guard = &epoch::pin::<epoch::DefaultCollector>();
 
         // Replace the old buffer with the new one.
         self.buffer.replace(new);
