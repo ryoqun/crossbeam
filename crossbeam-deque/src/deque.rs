@@ -1245,6 +1245,8 @@ impl<T, C> Default for Injector<T, C> {
                 block: AtomicPtr::new(block),
                 index: AtomicUsize::new(0),
             }),
+            _marker_t: PhantomData,
+            _marker_c: PhantomData,
         }
     }
 }
