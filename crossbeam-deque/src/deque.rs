@@ -564,6 +564,7 @@ pub struct Stealer<T, C> {
 
     /// The flavor of the queue.
     flavor: Flavor,
+    _marker: PhantomData<C>,
 }
 
 unsafe impl<T: Send, C> Send for Stealer<T, C> {}
