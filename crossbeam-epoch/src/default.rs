@@ -28,7 +28,7 @@ thread_local! {
 
 /// Pins the current thread.
 #[inline]
-pub fn pin() -> Guard {
+pub fn<T: CustomCollector> pin() -> Guard {
     DefaultCollector::with_handle(|handle| handle.pin())
 }
 
