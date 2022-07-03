@@ -1234,8 +1234,8 @@ pub struct Injector<T, C: CustomCollector> {
     _marker_c: PhantomData<C>,
 }
 
-unsafe impl<T: Send, C> Send for Injector<T, C> {}
-unsafe impl<T: Send, C> Sync for Injector<T, C> {}
+unsafe impl<T: Send, C: CustomCollector> Send for Injector<T, C> {}
+unsafe impl<T: Send, C: CustomCollector> Sync for Injector<T, C> {}
 
 impl<T, C> Default for Injector<T, C> {
     fn default() -> Self {
