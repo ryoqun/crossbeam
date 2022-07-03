@@ -189,7 +189,7 @@ pub struct Worker<T, C> {
     inner: Arc<CachePadded<Inner<T, C>>>,
 
     /// A copy of `inner.buffer` for quick access.
-    buffer: Cell<Buffer<T, C>>,
+    buffer: Cell<Buffer<T>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
