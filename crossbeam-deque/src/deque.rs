@@ -1120,6 +1120,7 @@ struct Slot<T, C> {
 
     /// The state of the slot.
     state: AtomicUsize,
+    _marker: PhantomData<C>,
 }
 
 impl<T, C> Slot<T, C> {
