@@ -39,7 +39,9 @@ pub fn is_pinned<C: CustomCollector>() -> bool {
 }
 
 pub trait CustomCollector {
+    /// cccc
     fn collector() -> &'static Collector;
+    /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
     fn with_handle<F, R>(mut f: F) -> R
@@ -52,6 +54,7 @@ pub trait CustomCollector {
     }
 }
 
+/// aaaa
 pub struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
