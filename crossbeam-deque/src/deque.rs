@@ -559,7 +559,7 @@ impl<T, C> fmt::Debug for Worker<T, C> {
 /// ```
 pub struct Stealer<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T, C>>>,
+    inner: Arc<CachePadded<Inner<T>>>,
 
     /// The flavor of the queue.
     flavor: Flavor,
