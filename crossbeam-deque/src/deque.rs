@@ -83,6 +83,7 @@ impl<T, C> Clone for Buffer<T, C> {
         Buffer {
             ptr: self.ptr,
             cap: self.cap,
+            _marker: Default::default(),
         }
     }
 }
