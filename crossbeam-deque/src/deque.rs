@@ -29,6 +29,7 @@ struct Buffer<T, C> {
 
     /// Capacity of the buffer. Always a power of two.
     cap: usize,
+    _marker: PhantomData<C>,
 }
 
 unsafe impl<T, C> Send for Buffer<T, C> {}
