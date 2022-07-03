@@ -226,7 +226,8 @@ impl<T, C: epoch::CustomCollector> Worker<T, C> {
             inner,
             buffer: Cell::new(buffer),
             flavor: Flavor::Fifo,
-            _marker: PhantomData,
+            _marker1: PhantomData,
+            _marker2: PhantomData,
         }
     }
 
