@@ -43,7 +43,7 @@ impl<T, C> Buffer<T, C> {
         let ptr = v.as_mut_ptr();
         mem::forget(v);
 
-        Buffer { ptr, cap }
+        Buffer { ptr, cap, _marker }
     }
 
     /// Deallocates the buffer.
