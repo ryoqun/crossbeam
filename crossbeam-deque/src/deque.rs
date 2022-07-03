@@ -570,8 +570,8 @@ pub struct Stealer<T, C: CustomCollector> {
     _marker: PhantomData<C>,
 }
 
-unsafe impl<T: Send, C> Send for Stealer<T, C> {}
-unsafe impl<T: Send, C> Sync for Stealer<T, C> {}
+unsafe impl<T: Send, C: CustomCollector> Send for Stealer<T, C> {}
+unsafe impl<T: Send, C: CustomCollector> Sync for Stealer<T, C> {}
 
 impl<T, C: CustomCollector> Stealer<T, C> {
     /// Returns `true` if the queue is empty.
