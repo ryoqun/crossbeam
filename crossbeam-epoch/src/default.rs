@@ -34,7 +34,7 @@ pub fn pin<C: CustomCollector>() -> Guard {
 
 /// Returns `true` if the current thread is pinned.
 #[inline]
-pub fn is_pinned() -> bool {
+pub fn is_pinned<C: CustomCollector() -> bool {
     DefaultCollector::with_handle(|handle| handle.is_pinned())
 }
 
