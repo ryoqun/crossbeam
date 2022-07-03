@@ -109,7 +109,7 @@ struct Inner<T, C> {
     back: AtomicIsize,
 
     /// The underlying buffer.
-    buffer: CachePadded<Atomic<Buffer<T, C>>>,
+    buffer: CachePadded<Atomic<Buffer<T>>>,
 }
 
 impl<T, C> Drop for Inner<T, C> {
