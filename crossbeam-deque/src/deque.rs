@@ -1114,9 +1114,9 @@ const SHIFT: usize = 1;
 const HAS_NEXT: usize = 1;
 
 /// A slot in a block.
-struct Slot<T> {
+struct Slot<T, C> {
     /// The task.
-    task: UnsafeCell<MaybeUninit<T>>,
+    task: UnsafeCell<MaybeUninit<T, C>>,
 
     /// The state of the slot.
     state: AtomicUsize,
