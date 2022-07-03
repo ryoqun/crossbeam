@@ -1251,7 +1251,7 @@ impl<T, C> Default for Injector<T, C> {
     }
 }
 
-impl<T, C> Injector<T, C> {
+impl<T, C: CustomCollector> Injector<T, C> {
     /// Creates a new injector queue.
     ///
     /// # Examples
