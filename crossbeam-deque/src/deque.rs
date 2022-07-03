@@ -561,7 +561,7 @@ impl<T, C: CustomCollector> fmt::Debug for Worker<T, C> {
 /// assert_eq!(s.steal(), Steal::Success(2));
 /// assert_eq!(s.steal(), Steal::Empty);
 /// ```
-pub struct Stealer<T, C> {
+pub struct Stealer<T, C: CustomCollector> {
     /// A reference to the inner representation of the queue.
     inner: Arc<CachePadded<Inner<T>>>,
 
