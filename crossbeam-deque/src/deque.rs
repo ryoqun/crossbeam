@@ -1116,7 +1116,7 @@ const HAS_NEXT: usize = 1;
 /// A slot in a block.
 struct Slot<T, C> {
     /// The task.
-    task: UnsafeCell<MaybeUninit<T, C>>,
+    task: UnsafeCell<MaybeUninit<T>>,
 
     /// The state of the slot.
     state: AtomicUsize,
