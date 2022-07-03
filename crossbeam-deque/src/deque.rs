@@ -1086,7 +1086,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
     }
 }
 
-impl<T, C> Clone for Stealer<T, C> {
+impl<T, C: CustomCollector> Clone for Stealer<T, C> {
     fn clone(&self) -> Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
@@ -1096,7 +1096,7 @@ impl<T, C> Clone for Stealer<T, C> {
     }
 }
 
-impl<T, C> fmt::Debug for Stealer<T, C> {
+impl<T, C: CustomCollector> fmt::Debug for Stealer<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Stealer { .. }")
     }
