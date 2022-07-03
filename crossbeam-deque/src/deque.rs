@@ -1122,7 +1122,7 @@ struct Slot<T, C> {
     state: AtomicUsize,
 }
 
-impl<T> Slot<T> {
+impl<T, C> Slot<T, C> {
     /// Waits until a task is written into the slot.
     fn wait_write(&self) {
         let backoff = Backoff::new();
