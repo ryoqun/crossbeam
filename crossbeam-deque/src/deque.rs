@@ -909,7 +909,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
         // If the current thread is already pinned (reentrantly), we must manually issue the
         // fence. Otherwise, the following pinning will issue the fence anyway, so we don't
         // have to.
-        if epoch::is_pinned::<epoch::DefaultCollector>() {
+        if epoch::is_pinned::<C>() {
             atomic::fence(Ordering::SeqCst);
         }
 
