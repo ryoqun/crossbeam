@@ -112,7 +112,7 @@ struct Inner<T> {
     buffer: CachePadded<Atomic<Buffer<T>>>,
 }
 
-impl<T, C> Drop for Inner<T, C> {
+impl<T> Drop for Inner<T> {
     fn drop(&mut self) {
         // Load the back index, front index, and buffer.
         let b = self.back.load(Ordering::Relaxed);
@@ -186,7 +186,7 @@ enum Flavor {
 /// ```
 pub struct Worker<T, C> {
     /// A reference to the inner representation of the queue.
-    inner: Arc<CachePadded<Inner<T, C>>>,
+    inner: Arc<CachePadded<Inner<T>>>,
 
     /// A copy of `inner.buffer` for quick access.
     buffer: Cell<Buffer<T>>,
