@@ -184,7 +184,7 @@ enum Flavor {
 /// assert_eq!(w.pop(), Some(3));
 /// assert_eq!(w.pop(), Some(2));
 /// ```
-pub struct Worker<T, C> {
+pub struct Worker<T, C: CustomCollector> {
     /// A reference to the inner representation of the queue.
     inner: Arc<CachePadded<Inner<T>>>,
 
@@ -199,7 +199,7 @@ pub struct Worker<T, C> {
     _marker2: PhantomData<C>, // !Send + !Sync
 }
 
-unsafe impl<T: Send, C> Send for Worker<T, C> {}
+unsafe impl<T: Send, C: CustomCollector> Send for Worker<T, C> {}
 
 impl<T, C: CustomCollector> Worker<T, C> {
     /// Creates a FIFO worker queue.
