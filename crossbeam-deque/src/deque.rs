@@ -1223,10 +1223,10 @@ struct Position<T> {
 /// ```
 pub struct Injector<T, C: CustomCollector> {
     /// The head of the queue.
-    head: CachePadded<Position<T, C>>,
+    head: CachePadded<Position<T>>,
 
     /// The tail of the queue.
-    tail: CachePadded<Position<T, C>>,
+    tail: CachePadded<Position<T>>,
 
     /// Indicates that dropping a `Injector<T>` may drop values of type `T`.
     _marker_t: PhantomData<T>,
