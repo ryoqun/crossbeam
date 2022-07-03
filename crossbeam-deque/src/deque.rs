@@ -535,7 +535,7 @@ impl<T, C: CustomCollector> Worker<T, C> {
     }
 }
 
-impl<T, C> fmt::Debug for Worker<T, C> {
+impl<T, C: CustomCollector> fmt::Debug for Worker<T, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Worker { .. }")
     }
