@@ -1091,6 +1091,7 @@ impl<T, C> Clone for Stealer<T, C> {
         Stealer {
             inner: self.inner.clone(),
             flavor: self.flavor,
+            _marker: self.marker,
         }
     }
 }
