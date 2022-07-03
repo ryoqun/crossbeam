@@ -1237,7 +1237,7 @@ pub struct Injector<T, C: CustomCollector> {
 unsafe impl<T: Send, C: CustomCollector> Send for Injector<T, C> {}
 unsafe impl<T: Send, C: CustomCollector> Sync for Injector<T, C> {}
 
-impl<T, C> Default for Injector<T, C> {
+impl<T, C: CustomCollector> Default for Injector<T, C> {
     fn default() -> Self {
         let block = Box::into_raw(Box::new(Block::<T, C>::new()));
         Self {
@@ -1827,7 +1827,7 @@ impl<T, C: CustomCollector> Injector<T, C> {
     }
 }
 
-impl<T, C> Drop for Injector<T, C> {
+impl<T, C: CustomCollector> Drop for Injector<T, C> {
     fn drop(&mut self) {
         let mut head = self.head.index.load(Ordering::Relaxed);
         let mut tail = self.tail.index.load(Ordering::Relaxed);
