@@ -1222,7 +1222,7 @@ struct Position<T, C> {
 /// assert_eq!(q.steal(), Steal::Success(2));
 /// assert_eq!(q.steal(), Steal::Empty);
 /// ```
-pub struct Injector<T, C> {
+pub struct Injector<T, C: CustomCollector> {
     /// The head of the queue.
     head: CachePadded<Position<T, C>>,
 
