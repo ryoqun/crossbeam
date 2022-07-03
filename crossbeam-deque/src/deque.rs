@@ -1156,7 +1156,7 @@ impl<T, C> Block<T, C> {
     }
 
     /// Waits until the next pointer is set.
-    fn wait_next(&self) -> *mut Block<T> {
+    fn wait_next(&self) -> *mut Block<T, C> {
         let backoff = Backoff::new();
         loop {
             let next = self.next.load(Ordering::Acquire);
@@ -1168,7 +1168,7 @@ impl<T, C> Block<T, C> {
     }
 
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
-    unsafe fn destroy(this: *mut Block<T>, count: usize) {
+    unsafe fn destroy(this: *mut Block<T, C>, count: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in (0..count).rev() {
