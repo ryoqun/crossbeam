@@ -1120,16 +1120,15 @@ const SHIFT: usize = 1;
 const HAS_NEXT: usize = 1;
 
 /// A slot in a block.
-struct Slot<T, C> {
+struct Slot<T> {
     /// The task.
     task: UnsafeCell<MaybeUninit<T>>,
 
     /// The state of the slot.
     state: AtomicUsize,
-    _marker: PhantomData<C>,
 }
 
-impl<T, C> Slot<T, C> {
+impl<T> Slot<T> {
     /// Waits until a task is written into the slot.
     fn wait_write(&self) {
         let backoff = Backoff::new();
@@ -1147,7 +1146,7 @@ struct Block<T, C> {
     next: AtomicPtr<Block<T, C>>,
 
     /// Slots for values.
-    slots: [Slot<T, C>; BLOCK_CAP],
+    slots: [Slot<T>; BLOCK_CAP],
 }
 
 impl<T, C> Block<T, C> {
