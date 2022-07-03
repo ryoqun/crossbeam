@@ -184,7 +184,7 @@ enum Flavor {
 /// assert_eq!(w.pop(), Some(3));
 /// assert_eq!(w.pop(), Some(2));
 /// ```
-pub struct Worker<T> {
+pub struct Worker<T, C> {
     /// A reference to the inner representation of the queue.
     inner: Arc<CachePadded<Inner<T>>>,
 
@@ -195,7 +195,8 @@ pub struct Worker<T> {
     flavor: Flavor,
 
     /// Indicates that the worker cannot be shared among threads.
-    _marker: PhantomData<*mut ()>, // !Send + !Sync
+    _marker1: PhantomData<*mut ()>, // !Send + !Sync
+    _marker2: PhantomData<C>, // !Send + !Sync
 }
 
 unsafe impl<T: Send, C> Send for Worker<T, C> {}
