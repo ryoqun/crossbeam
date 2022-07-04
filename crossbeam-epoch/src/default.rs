@@ -67,7 +67,9 @@ pub trait CustomCollector {
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn make_dyn_box() -> Box<dyn DynCustomCollector>;
+    fn make_dyn_box() -> Box<dyn DynCustomCollector> {
+        Box::<Self>::new(Self)
+    }
 
     /// wwww
     #[inline]
