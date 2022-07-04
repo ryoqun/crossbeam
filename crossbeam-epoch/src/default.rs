@@ -45,7 +45,9 @@ pub trait CustomCollector {
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn new() -> Self;
+    fn new() -> Self {
+        Self
+    }
 
     /// wwww
     fn with_handle<F, R>(mut f: F) -> R
@@ -70,10 +72,6 @@ impl CustomCollector for DefaultCollector {
 
     fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
         &DEFAULT_HANDLE
-    }
-
-    fn new() -> Self {
-        Self
     }
 }
 
