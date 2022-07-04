@@ -49,6 +49,7 @@ pub fn is_pinned_dyn(d: &Box<dyn DynCustomCollector>) -> bool {
 }
 
 /// wwww
+#[inline]
 fn with_handle_dyn<F, R>(d: &Box<dyn DynCustomCollector>, mut f: F) -> R
 where
     F: FnMut(&LocalHandle) -> R,
@@ -69,6 +70,7 @@ pub trait CustomCollector {
     fn make_dyn_box() -> Box<dyn DynCustomCollector>;
 
     /// wwww
+    #[inline]
     fn with_handle<F, R>(mut f: F) -> R
     where
         F: FnMut(&LocalHandle) -> R,
@@ -82,11 +84,9 @@ pub trait CustomCollector {
 
 pub trait DynCustomCollector {
     /// cccc
-    #[inline]
     fn collector(&self) -> &'static Collector;
 
     /// hhhh
-    #[inline]
     fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle>;
 
     #[inline]
