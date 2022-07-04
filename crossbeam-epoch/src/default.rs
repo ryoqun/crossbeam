@@ -100,14 +100,17 @@ pub trait DynCustomCollector {
 pub struct DefaultCollector;
 
 impl CustomCollector for DefaultCollector {
+    #[inline]
     fn collector() -> &'static Collector {
         &DEFAULT_COLLECTOR
     }
 
+    #[inline]
     fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
         &DEFAULT_HANDLE
     }
 
+    #[inline]
     fn make_dyn_box() -> Box<dyn DynCustomCollector> {
         Box::<Self>::new(Self)
     }
