@@ -8,7 +8,7 @@ use std::ptr;
 use std::sync::atomic::{self, AtomicIsize, AtomicPtr, AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use crate::epoch::{self, Atomic, Owned, CustomCollector};
+use crate::epoch::{self, Atomic, Owned, CustomCollector, DynCustomCollector};
 use crate::utils::{Backoff, CachePadded};
 
 // Minimum buffer capacity.
