@@ -50,7 +50,7 @@ pub trait CustomCollector {
     where
         F: FnMut(&LocalHandle) -> R,
     {
-        //dbg!(std::any::type_name::<Self>());
+        dbg!(std::any::type_name::<Self>());
         panic!();
         Self::handle()
             .try_with(|h| f(h))
