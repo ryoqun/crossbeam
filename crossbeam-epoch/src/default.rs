@@ -123,6 +123,16 @@ impl DynCustomCollector for DefaultCollector {
     }
 }
 
+impl<C: CustomCollector> DynCustomCollector for C {
+    fn collector(&self) -> &'static Collector {
+        &DEFAULT_COLLECTOR
+    }
+
+    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
+        &DEFAULT_HANDLE
+    }
+}
+
 #[cfg(all(test, not(crossbeam_loom)))]
 mod tests {
     use crossbeam_utils::thread;
