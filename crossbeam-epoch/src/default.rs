@@ -32,12 +32,18 @@ pub fn pin<C: CustomCollector>() -> Guard {
     C::with_handle(|handle| handle.pin())
 }
 
+#[inline]
+pub fn pin_dyn(d: &Box<dyn DynCustomCollector>) -> Guard {
+    with_handle_dyn(d, |handle| handle.pin())
+}
+
 /// Returns `true` if the current thread is pinned.
 #[inline]
 pub fn is_pinned<C: CustomCollector>() -> bool {
     C::with_handle(|handle| handle.is_pinned())
 }
 
+#[inline]
 pub fn is_pinned_dyn(d: &Box<dyn DynCustomCollector>) -> bool {
     with_handle_dyn(d, |handle| handle.is_pinned())
 }
