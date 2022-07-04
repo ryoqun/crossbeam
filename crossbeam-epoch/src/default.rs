@@ -119,7 +119,7 @@ impl<C: CustomCollector> DynCustomCollector for C {
     }
 
     fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
-        &DEFAULT_HANDLE
+        C::handle()
     }
 }
 
