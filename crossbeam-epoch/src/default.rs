@@ -109,7 +109,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn make_dyn_box() -> Box<dyn DynCustomCollector> {
-        Box::<Self>::new(DefaultCollector)
+        Box::<Self>::new(Self)
     }
 }
 
