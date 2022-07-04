@@ -73,7 +73,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     fn new() -> Self {
-        DefaultCollector
+        Self
     }
 }
 
