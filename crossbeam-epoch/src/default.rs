@@ -83,6 +83,13 @@ impl CustomCollector for DefaultCollector {
     fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
         &DEFAULT_HANDLE
     }
+
+    fn new() -> Self {
+        DefaultCollector
+    }
+}
+
+impl DynCustomCollector for CustomCollector {
 }
 
 #[cfg(all(test, not(crossbeam_loom)))]
