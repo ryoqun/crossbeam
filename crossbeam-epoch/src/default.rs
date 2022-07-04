@@ -65,6 +65,10 @@ pub trait DynCustomCollector {
 
     /// hhhh
     fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle>;
+
+    fn name(&self) -> &'static str {
+        std::any::type_name::<Self>
+    }
 }
 
 /// aaaa
