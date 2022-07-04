@@ -45,7 +45,7 @@ pub trait CustomCollector {
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn new() -> Box<dyn DynCustomCollector>;
+    fn make_dyn_box() -> Box<dyn DynCustomCollector>;
 
     /// wwww
     fn with_handle<F, R>(mut f: F) -> R
@@ -80,7 +80,7 @@ impl CustomCollector for DefaultCollector {
         &DEFAULT_HANDLE
     }
 
-    fn new() -> Box<dyn DynCustomCollector> {
+    fn make_dyn_box() -> Box<dyn DynCustomCollector> {
         Box::<Self>::new(DefaultCollector)
     }
 }
