@@ -38,6 +38,10 @@ pub fn is_pinned<C: CustomCollector>() -> bool {
     C::with_handle(|handle| handle.is_pinned())
 }
 
+pub fn is_pinned_dyn(d: &Box<dyn DynCustomCollector>) -> bool {
+    with_handle_dyn(d, |handle| handle.is_pinned())
+}
+
 /// wwww
 fn with_handle_dyn<F, R>(d: &Box<dyn DynCustomCollector>, mut f: F) -> R
 where
