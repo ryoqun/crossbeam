@@ -639,7 +639,8 @@ impl<T, C: CustomCollector> Stealer<T, C> {
         // fence. Otherwise, the following pinning will issue the fence anyway, so we don't
         // have to.
         //dbg!(("crossbeam steal2", std::any::type_name::<C>()));
-        if epoch::is_pinned::<C>() {
+        //if epoch::is_pinned::<C>() {
+        if epoch::is_pinned_dyn(d) {
             atomic::fence(Ordering::SeqCst);
         }
 
