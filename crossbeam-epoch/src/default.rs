@@ -61,15 +61,13 @@ where
 }
 
 /// ccccc
-pub trait CustomCollector: Sized {
+pub trait CustomCollector {
     /// cccc
     fn collector() -> &'static Collector;
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn make_dyn_box() -> Box<dyn DynCustomCollector> {
-        Box::<Self>::new(Self)
-    }
+    fn make_dyn_box() -> Box<dyn DynCustomCollector>;
 
     /// wwww
     #[inline]
