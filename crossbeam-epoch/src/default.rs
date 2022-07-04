@@ -71,9 +71,7 @@ pub trait DynCustomCollector<C: CustomCollector> {
     }
 
     /// wwww
-    fn with_handle<F, R>(&self, mut f: F) -> R
-    where
-        F: FnMut(&LocalHandle) -> R,
+    fn with_handle<R>(&self, mut f: FnMut(&LocalHandle) -> R) -> R
     {
         C::with_handle(f)
     }
