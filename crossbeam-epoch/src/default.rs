@@ -80,7 +80,7 @@ impl CustomCollector for DefaultCollector {
         &DEFAULT_HANDLE
     }
 
-    fn new() -> Self {
+    fn new() -> dyn DynCustomCollector {
         DefaultCollector
     }
 }
