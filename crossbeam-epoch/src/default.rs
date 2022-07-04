@@ -59,7 +59,7 @@ pub trait CustomCollector {
     }
 }
 
-pub trait DynCustomCollector {
+pub trait DynCustomCollector<C: CustomCollector> {
     /// cccc
     fn collector(&self) -> &'static Collector;
     /// hhhh
