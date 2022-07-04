@@ -61,7 +61,7 @@ where
 }
 
 /// ccccc
-pub trait CustomCollector {
+pub trait CustomCollector: Sized + Send {
     /// cccc
     fn collector() -> &'static Collector;
     /// hhhh
