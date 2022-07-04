@@ -629,7 +629,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
     /// assert_eq!(s.steal(), Steal::Success(1));
     /// assert_eq!(s.steal(), Steal::Success(2));
     /// ```
-    pub fn steal(&self) -> Steal<T> {
+    pub fn steal(&self, d: u8) -> Steal<T> {
         // Load the front index.
         let f = self.inner.front.load(Ordering::Acquire);
 
