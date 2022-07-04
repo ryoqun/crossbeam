@@ -38,6 +38,17 @@ pub fn is_pinned<C: CustomCollector>() -> bool {
     C::with_handle(|handle| handle.is_pinned())
 }
 
+/// wwww
+fn with_handle_dyn<F, R>(d: &Box<dyn DynCustomCollector>, mut f: F) -> R
+where
+    F: FnMut(&LocalHandle) -> R,
+{
+    //dbg!(std::any::type_name::<Self>());
+    d.handle()
+        .try_with(|h| f(h))
+        .unwrap_or_else(|_| f(&d.collector().register()))
+}
+
 /// ccccc
 pub trait CustomCollector {
     /// cccc
