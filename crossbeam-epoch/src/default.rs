@@ -51,6 +51,7 @@ pub trait CustomCollector {
         F: FnMut(&LocalHandle) -> R,
     {
         //dbg!(std::any::type_name::<Self>());
+        panic!();
         Self::handle()
             .try_with(|h| f(h))
             .unwrap_or_else(|_| f(&Self::collector().register()))
