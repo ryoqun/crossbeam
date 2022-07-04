@@ -29,13 +29,13 @@ thread_local! {
 /// Pins the current thread.
 #[inline]
 pub fn pin<C: CustomCollector>() -> Guard {
-    DefaultCollector::with_handle(|handle| handle.pin())
+    C::with_handle(|handle| handle.pin())
 }
 
 /// Returns `true` if the current thread is pinned.
 #[inline]
 pub fn is_pinned<C: CustomCollector>() -> bool {
-    DefaultCollector::with_handle(|handle| handle.is_pinned())
+    C::with_handle(|handle| handle.is_pinned())
 }
 
 /// ccccc
