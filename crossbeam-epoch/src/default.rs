@@ -61,21 +61,18 @@ pub trait CustomCollector {
 
 pub trait DynCustomCollector {
     /// cccc
-    fn collector() -> &'static Collector;
+    fn collector(&self) -> &'static Collector;
     /// hhhh
-    fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
+    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn new() -> Self;
+    fn new(&self) -> Self;
 
     /// wwww
-    fn with_handle<F, R>(mut f: F) -> R
+    fn with_handle<F, R>(&self, mut f: F) -> R
     where
         F: FnMut(&LocalHandle) -> R,
     {
-        //dbg!(std::any::type_name::<Self>());
-        Self::handle()
-            .try_with(|h| f(h))
-            .unwrap_or_else(|_| f(&Self::collector().register()))
+        panic!();
     }
 }
 
