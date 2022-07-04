@@ -113,16 +113,6 @@ impl CustomCollector for DefaultCollector {
     }
 }
 
-impl DynCustomCollector for DefaultCollector {
-    fn collector(&self) -> &'static Collector {
-        &DEFAULT_COLLECTOR
-    }
-
-    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
-        &DEFAULT_HANDLE
-    }
-}
-
 impl<C: CustomCollector> DynCustomCollector for C {
     fn collector(&self) -> &'static Collector {
         &DEFAULT_COLLECTOR
