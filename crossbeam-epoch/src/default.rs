@@ -85,7 +85,7 @@ impl CustomCollector for DefaultCollector {
     }
 }
 
-impl DynCustomCollector<CustomCollector>for DefaultCollector {
+impl DynCustomCollector for DefaultCollector {
 }
 
 #[cfg(all(test, not(crossbeam_loom)))]
