@@ -45,7 +45,7 @@ pub trait CustomCollector {
     /// hhhh
     fn handle() -> &'static std::thread::LocalKey<LocalHandle>; 
 
-    fn new() -> Self {
+    fn new() -> Self where Self: Sized {
         Self
     }
 
