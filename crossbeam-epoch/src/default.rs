@@ -69,12 +69,6 @@ pub trait DynCustomCollector<C: CustomCollector> {
     fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
         C::handle()
     }
-
-    /// wwww
-    fn with_handle<R>(&self, mut f: FnMut(&LocalHandle) -> R) -> R
-    {
-        C::with_handle(f)
-    }
 }
 
 /// aaaa
