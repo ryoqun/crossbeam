@@ -82,11 +82,14 @@ pub trait CustomCollector {
 
 pub trait DynCustomCollector {
     /// cccc
+    #[inline]
     fn collector(&self) -> &'static Collector;
 
     /// hhhh
+    #[inline]
     fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle>;
 
+    #[inline]
     fn name(&self) -> &'static str {
         std::any::type_name::<Self>()
     }
