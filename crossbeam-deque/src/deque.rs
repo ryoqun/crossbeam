@@ -693,7 +693,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
 
         let guard = &epoch::pin::<C>();
         */
-        let guard = &epoch::pin_under_possible_reentrancy:<C>();
+        let guard = &epoch::pin_under_possible_reentrancy::<C>();
 
         // Load the back index.
         let b = self.inner.back.load(Ordering::Acquire);
