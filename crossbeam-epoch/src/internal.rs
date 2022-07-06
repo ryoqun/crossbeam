@@ -232,9 +232,9 @@ impl SealedBag {
 }
 
 /// The global data for a garbage collector.
-pub(crate) struct Global {
+pub(crate) struct Global<C> {
     /// The intrusive linked list of `Local`s.
-    locals: List<Local>,
+    locals: List<Local<C>>,
 
     /// The global queue of bags of deferred functions.
     queue: Queue<SealedBag>,
@@ -243,7 +243,7 @@ pub(crate) struct Global {
     pub(crate) epoch: CachePadded<AtomicEpoch>,
 }
 
-impl Global {
+impl<C> Global<C> {
     /// Number of bags to destroy.
     const COLLECT_STEPS: usize = 8;
 
@@ -384,7 +384,7 @@ fn local_size() {
     );
 }
 
-impl Local {
+impl<C> Local<C> {
     /// Number of pinnings after which a participant will execute some deferred functions from the
     /// global queue.
     const PINNINGS_BETWEEN_COLLECT: usize = 128;
@@ -413,7 +413,7 @@ impl Local {
 
     /// Returns a reference to the `Global` in which this `Local` resides.
     #[inline]
-    pub(crate) fn global(&self) -> &Global {
+    pub(crate) fn global(&self) -> &Global<C> {
         &self.collector().global
     }
 

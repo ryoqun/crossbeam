@@ -67,8 +67,8 @@ use crate::internal::Local;
 /// ```
 ///
 /// [`pin`]: super::pin
-pub struct Guard {
-    pub(crate) local: *const Local,
+pub struct Guard<C> {
+    pub(crate) local: *const Local<C>,
 }
 
 impl Guard {
