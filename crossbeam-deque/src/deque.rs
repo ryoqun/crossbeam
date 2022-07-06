@@ -647,7 +647,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
 
         let guard = &epoch::pin_dyn(d);
         */
-        let guard = &epoch::pin_under_possible_reentrancy(d);
+        let guard = &epoch::pin_under_possible_reentrancy_dyn(d);
         //let guard = &epoch::pin::<C>();
 
         // Load the back index.
