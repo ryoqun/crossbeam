@@ -49,12 +49,12 @@ pub fn pin_dyn(d: &Box<dyn DynCustomCollector>) -> Guard {
 
 #[inline]
 pub fn pin_under_possible_reentrancy_dyn(d: &Box<dyn DynCustomCollector>) -> Guard {
-    with_handle_dyn(d, |handle| 
+    with_handle_dyn(d, |handle| {
         if handle.is_pinned() {
             std::sync::atomic::fence(std::sync::atomic::Ordering::SeqCst);
         }
         handle.pin()
-    )
+    })
 }
 
 /// Returns `true` if the current thread is pinned.
