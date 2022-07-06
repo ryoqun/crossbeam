@@ -682,6 +682,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
         Steal::Success(task)
     }
 
+    #[inline]
     pub fn steal_not_dyn(&self) -> Steal<T> {
         // Load the front index.
         let f = self.inner.front.load(Ordering::Acquire);
