@@ -164,6 +164,6 @@ cfg_if! {
 cfg_if! {
     if #[cfg(feature = "std")] {
         mod default;
-        pub use self::default::{is_pinned, is_pinned_dyn, pin, pin_under_possible_reentrancy, pin_dyn, DefaultCollector, CustomCollector, DynCustomCollector};
+        pub use self::default::{is_pinned, is_pinned_dyn, pin, pin_under_possible_reentrancy, pin_under_possible_reentrancy_dyn, pin_dyn, DefaultCollector, CustomCollector, DynCustomCollector};
     }
 }
