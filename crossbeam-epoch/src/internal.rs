@@ -455,7 +455,7 @@ impl Local {
 
     /// Pins the `Local`.
     #[inline]
-    pub(crate) fn pin(&self) -> Guard {
+    pub(crate) fn pin<C>(&self) -> Guard {
         let guard = Guard { local: self };
 
         let guard_count = self.guard_count.get();
