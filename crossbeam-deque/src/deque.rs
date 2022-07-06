@@ -640,11 +640,14 @@ impl<T, C: CustomCollector> Stealer<T, C> {
         // have to.
         //dbg!(("crossbeam steal2", std::any::type_name::<C>()));
         //if epoch::is_pinned::<C>() {
+        /*
         if epoch::is_pinned_dyn(d) {
             atomic::fence(Ordering::SeqCst);
         }
 
         let guard = &epoch::pin_dyn(d);
+        */
+        let guard = &epoch::pin_under_possible_reentrancy(d);
         //let guard = &epoch::pin::<C>();
 
         // Load the back index.
