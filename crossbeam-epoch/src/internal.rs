@@ -574,7 +574,7 @@ impl Local {
 
     /// Removes the `Local` from the global linked list.
     #[cold]
-    fn finalize(&self) {
+    fn finalize<C>(&self) {
         debug_assert_eq!(self.guard_count.get(), 0);
         debug_assert_eq!(self.handle_count.get(), 0);
 
@@ -584,7 +584,7 @@ impl Local {
         unsafe {
             // Pin and move the local bag into the global queue. It's important that `push_bag`
             // doesn't defer destruction on any new garbage.
-            let guard = &self.pin();
+            let guard = &self.pin<C>();
             self.global()
                 .push_bag(self.bag.with_mut(|b| &mut *b), guard);
         }
