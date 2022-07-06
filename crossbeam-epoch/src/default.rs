@@ -36,7 +36,7 @@ pub fn pin<C: CustomCollector>() -> Guard {
 pub fn pin_under_possible_reentrancy<C: CustomCollector>() -> Guard {
     C::with_handle(|handle| {
         if handle.is_pinned() {
-            atomic::fence(Ordering::SeqCst);
+            std::sync::atomic::fence(std::sync::atomic::Ordering::SeqCst);
         }
         handle.pin()
     })
