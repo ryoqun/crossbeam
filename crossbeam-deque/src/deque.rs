@@ -8,7 +8,7 @@ use std::ptr;
 use std::sync::atomic::{self, AtomicIsize, AtomicPtr, AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use crate::epoch::{self, Atomic, Owned, CustomCollector, DynCustomCollector};
+use crate::epoch::{self, Atomic, Owned, CustomCollector};
 use crate::utils::{Backoff, CachePadded};
 
 // Minimum buffer capacity.
@@ -629,7 +629,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
     /// assert_eq!(s.steal(), Steal::Success(1));
     /// assert_eq!(s.steal(), Steal::Success(2));
     /// ```
-    pub fn steal(&self, d: &Box<dyn DynCustomCollector>) -> Steal<T> {
+    pub fn steal(&self) -> Steal<T> {
         // Load the front index.
         let f = self.inner.front.load(Ordering::Acquire);
 
@@ -638,14 +638,11 @@ impl<T, C: CustomCollector> Stealer<T, C> {
         // If the current thread is already pinned (reentrantly), we must manually issue the
         // fence. Otherwise, the following pinning will issue the fence anyway, so we don't
         // have to.
-        //dbg!(("crossbeam steal2", std::any::type_name::<C>()));
-        //if epoch::is_pinned::<C>() {
-        if epoch::is_pinned_dyn(d) {
+        if epoch::is_pinned::<C>() {
             atomic::fence(Ordering::SeqCst);
         }
 
-        let guard = &epoch::pin_dyn(d);
-        //let guard = &epoch::pin::<C>();
+        let guard = &epoch::pin::<C>();
 
         // Load the back index.
         let b = self.inner.back.load(Ordering::Acquire);
