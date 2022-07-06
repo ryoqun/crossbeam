@@ -33,6 +33,16 @@ pub fn pin<C: CustomCollector>() -> Guard {
 }
 
 #[inline]
+pub fn pin_under_possible_reentrancy<C: CustomCollector>() -> Guard {
+    C::with_handle(|handle| {
+        if handle.is_pinned() {
+            atomic::fence(Ordering::SeqCst);
+        }
+        handle.pin()
+    })
+}
+
+#[inline]
 pub fn pin_dyn(d: &Box<dyn DynCustomCollector>) -> Guard {
     with_handle_dyn(d, |handle| handle.pin())
 }
