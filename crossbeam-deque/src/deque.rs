@@ -437,6 +437,7 @@ impl<T, C: CustomCollector> Worker<T, C> {
     /// assert_eq!(w.pop(), Some(2));
     /// assert_eq!(w.pop(), None);
     /// ```
+    #[inline]
     pub fn pop(&self) -> Option<T> {
         // Load the back and front index.
         let b = self.inner.back.load(Ordering::Relaxed);
@@ -629,6 +630,7 @@ impl<T, C: CustomCollector> Stealer<T, C> {
     /// assert_eq!(s.steal(), Steal::Success(1));
     /// assert_eq!(s.steal(), Steal::Success(2));
     /// ```
+    #[inline]
     pub fn steal(&self, d: &Box<dyn DynCustomCollector>) -> Steal<T> {
         // Load the front index.
         let f = self.inner.front.load(Ordering::Acquire);
