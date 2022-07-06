@@ -106,7 +106,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     #[inline]
-    fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
+    fn handle() -> &'static std::thread::LocalKey<LocalHandle<Self>> {
         &DEFAULT_HANDLE
     }
 
