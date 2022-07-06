@@ -82,12 +82,12 @@ pub trait CustomCollector: Sized + Send {
     }
 }
 
-pub trait DynCustomCollector<C> {
+pub trait DynCustomCollector {
     /// cccc
     fn collector(&self) -> &'static Collector;
 
     /// hhhh
-    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle<C>>;
+    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle>;
 
     #[inline]
     fn name(&self) -> &'static str {
@@ -106,7 +106,7 @@ impl CustomCollector for DefaultCollector {
     }
 
     #[inline]
-    fn handle() -> &'static std::thread::LocalKey<LocalHandle<Self>> {
+    fn handle() -> &'static std::thread::LocalKey<LocalHandle> {
         &DEFAULT_HANDLE
     }
 
@@ -123,7 +123,7 @@ impl<C: CustomCollector> DynCustomCollector for C {
     }
 
     #[inline]
-    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle<C>> {
+    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
         C::handle()
     }
 }
