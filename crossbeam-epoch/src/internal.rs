@@ -346,7 +346,7 @@ impl Global {
 }
 
 /// Participant for garbage collection.
-pub(crate) struct Local {
+pub(crate) struct Local<C> {
     /// A node in the intrusive linked list of `Local`s.
     entry: Entry,
 
@@ -455,7 +455,7 @@ impl Local {
 
     /// Pins the `Local`.
     #[inline]
-    pub(crate) fn pin<C>(&self) -> Guard {
+    pub(crate) fn pin(&self) -> Guard {
         let guard = Guard { local: self };
 
         let guard_count = self.guard_count.get();
@@ -574,7 +574,7 @@ impl Local {
 
     /// Removes the `Local` from the global linked list.
     #[cold]
-    fn finalize<C>(&self) {
+    fn finalize(&self) {
         debug_assert_eq!(self.guard_count.get(), 0);
         debug_assert_eq!(self.handle_count.get(), 0);
 
@@ -584,7 +584,7 @@ impl Local {
         unsafe {
             // Pin and move the local bag into the global queue. It's important that `push_bag`
             // doesn't defer destruction on any new garbage.
-            let guard = &self.pin<C>();
+            let guard = &self.pin();
             self.global()
                 .push_bag(self.bag.with_mut(|b| &mut *b), guard);
         }
