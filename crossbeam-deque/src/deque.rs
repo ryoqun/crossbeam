@@ -8,7 +8,7 @@ use std::ptr;
 use std::sync::atomic::{self, AtomicIsize, AtomicPtr, AtomicUsize, Ordering};
 use std::sync::Arc;
 
-use crate::epoch::{self, Atomic, Owned, CustomCollector};
+use crate::epoch::{self, Atomic, Owned, CustomCollector, DynCustomCollector};
 use crate::utils::{Backoff, CachePadded};
 
 // Minimum buffer capacity.
@@ -629,7 +629,55 @@ impl<T, C: CustomCollector> Stealer<T, C> {
     /// assert_eq!(s.steal(), Steal::Success(1));
     /// assert_eq!(s.steal(), Steal::Success(2));
     /// ```
-    pub fn steal(&self) -> Steal<T> {
+    pub fn steal(&self, d: &Box<dyn DynCustomCollector>) -> Steal<T> {
+        // Load the front index.
+        let f = self.inner.front.load(Ordering::Acquire);
+
+        // A SeqCst fence is needed here.
+        //
+        // If the current thread is already pinned (reentrantly), we must manually issue the
+        // fence. Otherwise, the following pinning will issue the fence anyway, so we don't
+        // have to.
+        //dbg!(("crossbeam steal2", std::any::type_name::<C>()));
+        //if epoch::is_pinned::<C>() {
+        if epoch::is_pinned_dyn(d) {
+            atomic::fence(Ordering::SeqCst);
+        }
+
+        let guard = &epoch::pin_dyn(d);
+        //let guard = &epoch::pin::<C>();
+
+        // Load the back index.
+        let b = self.inner.back.load(Ordering::Acquire);
+
+        // Is the queue empty?
+        if b.wrapping_sub(f) <= 0 {
+            return Steal::Empty;
+        }
+
+        // Load the buffer and read the task at the front.
+        let buffer = self.inner.buffer.load(Ordering::Acquire, guard);
+        let task = unsafe { buffer.deref().read(f) };
+
+        // Try incrementing the front index to steal the task.
+        // If the buffer has been swapped or the increment fails, we retry.
+        if self.inner.buffer.load(Ordering::Acquire, guard) != buffer
+            || self
+                .inner
+                .front
+                .compare_exchange(f, f.wrapping_add(1), Ordering::SeqCst, Ordering::Relaxed)
+                .is_err()
+        {
+            // We didn't steal this task, forget it.
+            mem::forget(task);
+            return Steal::Retry;
+        }
+
+        // Return the stolen task.
+        Steal::Success(task)
+    }
+
+    pub fn steal_not_dyn(&self) -> Steal<T> {
         // Load the front index.
         let f = self.inner.front.load(Ordering::Acquire);
 
