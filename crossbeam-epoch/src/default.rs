@@ -123,7 +123,7 @@ impl<C: CustomCollector> DynCustomCollector for C {
     }
 
     #[inline]
-    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle> {
+    fn handle(&self) -> &'static std::thread::LocalKey<LocalHandle<C>> {
         C::handle()
     }
 }
