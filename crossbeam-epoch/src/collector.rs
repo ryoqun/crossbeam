@@ -41,7 +41,7 @@ impl Collector {
     }
 
     /// Registers a new handle for the collector.
-    pub fn register<CC>(&self) -> LocalHandle<CC> {
+    pub fn register(&self) -> LocalHandle {
         Local::register(self)
     }
 }
@@ -70,11 +70,11 @@ impl PartialEq for Collector {
 impl Eq for Collector {}
 
 /// A handle to a garbage collector.
-pub struct LocalHandle<CC> {
-    pub(crate) local: *const Local<CC>,
+pub struct LocalHandle {
+    pub(crate) local: *const Local,
 }
 
-impl<CC> LocalHandle<CC> {
+impl LocalHandle {
     /// Pins the handle.
     #[inline]
     pub fn pin(&self) -> Guard {
@@ -94,7 +94,7 @@ impl<CC> LocalHandle<CC> {
     }
 }
 
-impl<CC> Drop for LocalHandle<CC> {
+impl Drop for LocalHandle {
     #[inline]
     fn drop(&mut self) {
         unsafe {
@@ -103,7 +103,7 @@ impl<CC> Drop for LocalHandle<CC> {
     }
 }
 
-impl<CC> fmt::Debug for LocalHandle<CC> {
+impl fmt::Debug for LocalHandle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("LocalHandle { .. }")
     }
