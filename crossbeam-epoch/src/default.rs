@@ -82,7 +82,7 @@ pub trait CustomCollector: Sized + Send {
     }
 }
 
-pub trait DynCustomCollector<C: CustomCollector> {
+pub trait DynCustomCollector<C> {
     /// cccc
     fn collector(&self) -> &'static Collector;
 
