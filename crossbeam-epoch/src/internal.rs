@@ -387,7 +387,7 @@ fn local_size() {
 impl Local {
     /// Number of pinnings after which a participant will execute some deferred functions from the
     /// global queue.
-    const PINNINGS_BETWEEN_COLLECT: usize = usize::max_value()
+    const PINNINGS_BETWEEN_COLLECT: usize = usize::MAX;
 
     /// Registers a new `Local` in the provided `Global`.
     pub(crate) fn register(collector: &Collector) -> LocalHandle {
