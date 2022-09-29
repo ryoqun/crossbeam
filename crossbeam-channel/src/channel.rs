@@ -400,6 +400,10 @@ impl<T> Sender<T> {
         }
     }
 
+    pub fn try_send_buffered(&self, msg: T) -> Result<(), TrySendError<T>> {
+        todo!()
+    }
+
     /// Blocks the current thread until a message is sent or the channel is disconnected.
     ///
     /// If the channel is full and not disconnected, this call will block until the send operation
@@ -440,6 +444,7 @@ impl<T> Sender<T> {
         })
     }
 
+    #[inline(never)]
     pub fn send_buffered(&self, msg: T) -> Result<(), SendError<T>> {
         match &self.flavor {
             SenderFlavor::Array(chan) => chan.send_buffered(msg, None),
