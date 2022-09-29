@@ -432,6 +432,7 @@ impl<T> Sender<T> {
     /// assert_eq!(s.send(2), Ok(()));
     /// assert_eq!(s.send(3), Err(SendError(3)));
     /// ```
+    #[inline(never)]
     pub fn send(&self, msg: T) -> Result<(), SendError<T>> {
         match &self.flavor {
             SenderFlavor::Array(chan) => chan.send(msg, None),
