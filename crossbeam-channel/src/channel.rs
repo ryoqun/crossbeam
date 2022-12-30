@@ -1008,6 +1008,17 @@ impl<T> Receiver<T> {
         }
     }
 
+    pub fn is_disconnected(&self) -> bool {
+        match &self.flavor {
+            ReceiverFlavor::Array(chan) => chan.is_disconnected(),
+            ReceiverFlavor::List(chan) => chan.is_disconnected(),
+            ReceiverFlavor::Zero(chan) => todo!(),
+            ReceiverFlavor::At(chan) => todo!(),
+            ReceiverFlavor::Tick(chan) => todo!(),
+            ReceiverFlavor::Never(chan) => todo!(),
+        }
+    }
+
     /// Returns the number of messages in the channel.
     ///
     /// # Examples
