@@ -365,7 +365,7 @@ pub mod internal {
 #[cfg(feature = "std")]
 pub use crate::{
     channel::{
-        after, at, bounded, never, tick, unbounded, IntoIter, Iter, Receiver, Sender, TryIter,
+        after, at, bounded, disconnected, never, tick, unbounded, IntoIter, Iter, Receiver, Sender, TryIter,
     },
     err::{
         ReadyTimeoutError, RecvError, RecvTimeoutError, SelectTimeoutError, SendError,
