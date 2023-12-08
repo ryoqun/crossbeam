@@ -268,6 +268,13 @@ pub fn never<T>() -> Receiver<T> {
     }
 }
 
+/// Creates a receiver that is disconnected always.
+pub fn disconnected<T>() -> Receiver<T> {
+    Receiver {
+        flavor: ReceiverFlavor::Disconnected(flavors::disconnected::Channel::new()),
+    }
+}
+
 /// Creates a receiver that delivers messages periodically.
 ///
 /// The channel is bounded with capacity of 1 and never gets disconnected. Messages will be
@@ -738,6 +745,9 @@ enum ReceiverFlavor<T> {
 
     /// The never flavor.
     Never(flavors::never::Channel<T>),
+
+    /// The disconnected flavor.
+    Disconnected(flavors::disconnected::Channel<T>),
 }
 
 unsafe impl<T: Send> Send for Receiver<T> {}
@@ -791,6 +801,7 @@ impl<T> Receiver<T> {
                 }
             }
             ReceiverFlavor::Never(chan) => chan.try_recv(),
+            ReceiverFlavor::Disconnected(chan) => chan.try_recv(),
         }
     }
 
@@ -846,6 +857,7 @@ impl<T> Receiver<T> {
                 }
             }
             ReceiverFlavor::Never(chan) => chan.recv(None),
+            ReceiverFlavor::Disconnected(chan) => chan.recv(None),
         }
         .map_err(|_| RecvError)
     }
@@ -957,6 +969,7 @@ impl<T> Receiver<T> {
                 }
             }
             ReceiverFlavor::Never(chan) => chan.recv(Some(deadline)),
+            ReceiverFlavor::Disconnected(chan) => chan.recv(Some(deadline)),
         }
     }
 
@@ -983,6 +996,7 @@ impl<T> Receiver<T> {
             ReceiverFlavor::At(chan) => chan.is_empty(),
             ReceiverFlavor::Tick(chan) => chan.is_empty(),
             ReceiverFlavor::Never(chan) => chan.is_empty(),
+            ReceiverFlavor::Disconnected(chan) => chan.is_empty(),
         }
     }
 
@@ -1009,6 +1023,7 @@ impl<T> Receiver<T> {
             ReceiverFlavor::At(chan) => chan.is_full(),
             ReceiverFlavor::Tick(chan) => chan.is_full(),
             ReceiverFlavor::Never(chan) => chan.is_full(),
+            ReceiverFlavor::Disconnected(chan) => chan.is_full(),
         }
     }
 
@@ -1034,6 +1049,7 @@ impl<T> Receiver<T> {
             ReceiverFlavor::At(chan) => chan.len(),
             ReceiverFlavor::Tick(chan) => chan.len(),
             ReceiverFlavor::Never(chan) => chan.len(),
+            ReceiverFlavor::Disconnected(chan) => chan.len(),
         }
     }
 
@@ -1061,6 +1077,7 @@ impl<T> Receiver<T> {
             ReceiverFlavor::At(chan) => chan.capacity(),
             ReceiverFlavor::Tick(chan) => chan.capacity(),
             ReceiverFlavor::Never(chan) => chan.capacity(),
+            ReceiverFlavor::Disconnected(chan) => chan.capacity(),
         }
     }
 
@@ -1170,6 +1187,7 @@ impl<T> Drop for Receiver<T> {
                 ReceiverFlavor::At(_) => {}
                 ReceiverFlavor::Tick(_) => {}
                 ReceiverFlavor::Never(_) => {}
+                ReceiverFlavor::Disconnected(_) => {}
             }
         }
     }
@@ -1184,6 +1202,9 @@ impl<T> Clone for Receiver<T> {
             ReceiverFlavor::At(chan) => ReceiverFlavor::At(chan.clone()),
             ReceiverFlavor::Tick(chan) => ReceiverFlavor::Tick(chan.clone()),
             ReceiverFlavor::Never(_) => ReceiverFlavor::Never(flavors::never::Channel::new()),
+            ReceiverFlavor::Disconnected(_) => {
+                ReceiverFlavor::Disconnected(flavors::disconnected::Channel::new())
+            }
         };
 
         Receiver { flavor }
@@ -1431,6 +1452,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.try_select(token),
             ReceiverFlavor::Tick(chan) => chan.try_select(token),
             ReceiverFlavor::Never(chan) => chan.try_select(token),
+            ReceiverFlavor::Disconnected(chan) => chan.try_select(token),
         }
     }
 
@@ -1442,6 +1464,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.deadline(),
             ReceiverFlavor::Tick(chan) => chan.deadline(),
             ReceiverFlavor::Never(chan) => chan.deadline(),
+            ReceiverFlavor::Disconnected(chan) => chan.deadline(),
         }
     }
 
@@ -1453,6 +1476,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.register(oper, cx),
             ReceiverFlavor::Tick(chan) => chan.register(oper, cx),
             ReceiverFlavor::Never(chan) => chan.register(oper, cx),
+            ReceiverFlavor::Disconnected(chan) => chan.register(oper, cx),
         }
     }
 
@@ -1464,6 +1488,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.unregister(oper),
             ReceiverFlavor::Tick(chan) => chan.unregister(oper),
             ReceiverFlavor::Never(chan) => chan.unregister(oper),
+            ReceiverFlavor::Disconnected(chan) => chan.unregister(oper),
         }
     }
 
@@ -1475,6 +1500,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.accept(token, cx),
             ReceiverFlavor::Tick(chan) => chan.accept(token, cx),
             ReceiverFlavor::Never(chan) => chan.accept(token, cx),
+            ReceiverFlavor::Disconnected(chan) => chan.accept(token, cx),
         }
     }
 
@@ -1486,6 +1512,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.is_ready(),
             ReceiverFlavor::Tick(chan) => chan.is_ready(),
             ReceiverFlavor::Never(chan) => chan.is_ready(),
+            ReceiverFlavor::Disconnected(chan) => chan.is_ready(),
         }
     }
 
@@ -1497,6 +1524,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.watch(oper, cx),
             ReceiverFlavor::Tick(chan) => chan.watch(oper, cx),
             ReceiverFlavor::Never(chan) => chan.watch(oper, cx),
+            ReceiverFlavor::Disconnected(chan) => chan.watch(oper, cx),
         }
     }
 
@@ -1508,6 +1536,7 @@ impl<T> SelectHandle for Receiver<T> {
             ReceiverFlavor::At(chan) => chan.unwatch(oper),
             ReceiverFlavor::Tick(chan) => chan.unwatch(oper),
             ReceiverFlavor::Never(chan) => chan.unwatch(oper),
+            ReceiverFlavor::Disconnected(chan) => chan.unwatch(oper),
         }
     }
 }
@@ -1535,5 +1564,6 @@ pub(crate) unsafe fn read<T>(r: &Receiver<T>, token: &mut Token) -> Result<T, ()
             mem::transmute_copy::<Result<Instant, ()>, Result<T, ()>>(&chan.read(token))
         }
         ReceiverFlavor::Never(chan) => chan.read(token),
+        ReceiverFlavor::Disconnected(chan) => chan.read(token),
     }
 }
