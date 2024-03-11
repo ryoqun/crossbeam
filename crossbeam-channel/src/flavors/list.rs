@@ -214,15 +214,14 @@ impl<T> Channel<T> {
 
         let mut tail;
         let mut block;
-        'no_skip: loop {
+        loop {
             tail = self.tail.index.load(Ordering::Acquire);
-            'skip_index: loop {
             block = self.tail.block.load(Ordering::Acquire);
 
             // Check if the channel is disconnected.
             if tail & MARK_BIT != 0 {
                 token.block = ptr::null();
-                break 'no_skip;
+                break;
             }
 
             // Calculate the offset of the index into the block.
@@ -231,7 +230,7 @@ impl<T> Channel<T> {
             if offset > NEAR_BLOCK_CAP {
                 // If we reached the end of the block, wait until the next one is installed.
                 backoff.snooze();
-                continue 'no_skip;
+                continue;
             } else if block.is_null() {
                 // If this is the first message to be sent into the channel, we need to allocate
                 // the first block and install it.
@@ -247,7 +246,7 @@ impl<T> Channel<T> {
                     block = new;
                 } else {
                     next_block = new;
-                    continue 'no_skip;
+                    continue;
                 }
             } else if offset == NEAR_BLOCK_CAP && next_block.is_null() {
                 // If we're going to have to install the next block, allocate it in advance in
@@ -274,16 +273,12 @@ impl<T> Channel<T> {
 
                     token.block = block as *const u8;
                     token.offset = offset;
-                    break 'no_skip;
+                    break;
                 },
-                Err(t) => {
+                Err(_) => {
                     backoff.spin();
-                    tail = t;
-                    continue 'skip_index;
                 }
             }
-            break 'skip_index;
-        }
         }
 
         if !next_block.is_null() {
@@ -316,9 +311,8 @@ impl<T> Channel<T> {
         let mut head;
         let mut block;
 
-        'no_skip: loop {
+        loop {
             head = self.head.index.load(Ordering::Acquire);
-            'skip_head: loop {
             block = self.head.block.load(Ordering::Acquire);
 
             // Calculate the offset of the index into the block.
@@ -327,7 +321,7 @@ impl<T> Channel<T> {
             // If we reached the end of the block, wait until the next one is installed.
             if offset == BLOCK_CAP {
                 backoff.snooze();
-                continue 'no_skip;
+                continue;
             }
 
             let mut new_head = head + (1 << SHIFT);
@@ -359,7 +353,7 @@ impl<T> Channel<T> {
             // In that case, just wait until it gets initialized.
             if block.is_null() {
                 backoff.snooze();
-                continue 'no_skip;
+                continue;
             }
 
             // Try moving the head index forward.
@@ -386,14 +380,10 @@ impl<T> Channel<T> {
                     token.offset = offset;
                     return true;
                 },
-                Err(h) => {
-                    head = h;
+                Err(_) => {
                     backoff.spin();
-                    continue 'skip_head;
                 }
             }
-            break 'skip_head;
-        }
         }
     }
 
