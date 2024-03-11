@@ -25,8 +25,8 @@ use crate::waker::SyncWaker;
 // * If a message has been written into the slot, `WRITE` is set.
 // * If a message has been read from the slot, `READ` is set.
 // * If the block is being destroyed, `DESTROY` is set.
-type State = u8;
-type AtomicState = CachePadded<AtomicU8>;
+type State = usize;
+type AtomicState = CachePadded<AtomicUsize>;
 const WRITE: State = 1;
 const READ: State = 2;
 const DESTROY: State = 4;
@@ -77,7 +77,7 @@ impl<T> Block<T> {
     /// Creates an empty block.
     fn new() -> Self {
         #[allow(clippy::declare_interior_mutable_const)]
-        const UNINIT_STATE: AtomicState = AtomicState::new(AtomicU8::new(0));
+        const UNINIT_STATE: AtomicState = AtomicState::new(AtomicUsize::new(0));
 
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
