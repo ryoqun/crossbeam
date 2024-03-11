@@ -32,7 +32,7 @@ const READ: State = 2;
 const DESTROY: State = 4;
 
 // Each block covers one "lap" of indices.
-const LAP: usize = 32;
+const LAP: usize = 256;
 // The maximum number of messages a block can hold.
 const BLOCK_CAP: usize = LAP - 1;
 const NEAR_BLOCK_CAP: usize = LAP - 2;
