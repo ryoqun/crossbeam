@@ -108,16 +108,20 @@ impl<T> Block<T> {
         }
     }
 
+    unsafe fn get_state_unchecked(&self, i: usize) -> &AtomicUsize {
+        unsafe { self.states.get_unchecked(i) }
+    }
+
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
-        for i in start..BLOCK_CAP - 1 {
-            let slot = unsafe { (*this).get_slot_unchecked(i) };
+        for i in start..BLOCK_CAP {
+            let state = unsafe { (*this).get_state_unchecked(i) };
 
             // Mark the `DESTROY` bit if a thread is still using the slot.
-            if slot.state.load(Ordering::Acquire) & READ == 0
-                && slot.state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
+            if state.load(Ordering::Acquire) & READ == 0
+                && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
             {
                 // If a thread is still using the slot, it will continue destruction of the block.
                 return;
