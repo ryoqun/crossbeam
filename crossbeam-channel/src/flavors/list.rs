@@ -26,7 +26,7 @@ use crate::waker::SyncWaker;
 // * If a message has been read from the slot, `READ` is set.
 // * If the block is being destroyed, `DESTROY` is set.
 type State = usize;
-type AtomicState = CachePadded<AtomicUsize>;
+type AtomicState = AtomicUsize;
 const WRITE: State = 1;
 const READ: State = 2;
 const DESTROY: State = 4;
@@ -77,7 +77,7 @@ impl<T> Block<T> {
     /// Creates an empty block.
     fn new() -> Self {
         #[allow(clippy::declare_interior_mutable_const)]
-        const UNINIT_STATE: AtomicState = AtomicState::new(AtomicUsize::new(0));
+        const UNINIT_STATE: AtomicState = AtomicState::new(0);
 
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
@@ -99,12 +99,12 @@ impl<T> Block<T> {
     }
 
     unsafe fn get_slot_unchecked(&self, i: usize) -> Slot<'_, T> {
-        //let i2 = (i % 16) * 16 + i / 16;
+        let i2 = (i % 16) * 16 + i / 16;
         //let i2 = (i % 16) + i / 16;
         Slot {
             msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i) },
-            state: unsafe { self.states.get_unchecked(i) },
-            //state: unsafe { self.states.get_unchecked(i2) },
+            //state: unsafe { self.states.get_unchecked(i) },
+            state: unsafe { self.states.get_unchecked(i2) },
         }
     }
 
