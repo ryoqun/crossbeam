@@ -25,9 +25,11 @@ use crate::waker::SyncWaker;
 // * If a message has been written into the slot, `WRITE` is set.
 // * If a message has been read from the slot, `READ` is set.
 // * If the block is being destroyed, `DESTROY` is set.
-const WRITE: u8 = 1;
-const READ: u8 = 2;
-const DESTROY: u8 = 4;
+type State = u8;
+type AtomicState = AtomicU8;
+const WRITE: State = 1;
+const READ: State = 2;
+const DESTROY: State = 4;
 
 // Each block covers one "lap" of indices.
 const LAP: usize = 32;
@@ -43,7 +45,7 @@ const MARK_BIT: usize = 1;
 
 /// A slot in a block.
 struct Slot<'a, T> {
-    state: &'a AtomicU8,
+    state: &'a AtomicState,
     msg: &'a UnsafeCell<T>,
 }
 
@@ -65,7 +67,7 @@ struct Block<T> {
     next: AtomicPtr<Block<T>>,
 
     /// states for slots.
-    states: [AtomicU8; BLOCK_CAP],
+    states: [AtomicState; BLOCK_CAP],
 
     /// messages for slots.
     msgs: MaybeUninit<[UnsafeCell<T>; BLOCK_CAP]>,
@@ -75,7 +77,7 @@ impl<T> Block<T> {
     /// Creates an empty block.
     fn new() -> Self {
         #[allow(clippy::declare_interior_mutable_const)]
-        const UNINIT_STATE: AtomicU8 = AtomicU8::new(0);
+        const UNINIT_STATE: AtomicState = AtomicState::new(0);
 
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
@@ -97,9 +99,12 @@ impl<T> Block<T> {
     }
 
     unsafe fn get_slot_unchecked(&self, i: usize) -> Slot<'_, T> {
+        //let i2 = (i % 16) * 16 + i / 16;
+        //let i2 = (i % 16) + i / 16;
         Slot {
             msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i) },
             state: unsafe { self.states.get_unchecked(i) },
+            //state: unsafe { self.states.get_unchecked(i2) },
         }
     }
 
@@ -209,14 +214,15 @@ impl<T> Channel<T> {
 
         let mut tail;
         let mut block;
-        loop {
+        'no_skip: loop {
             tail = self.tail.index.load(Ordering::Acquire);
+            'skip_index: loop {
             block = self.tail.block.load(Ordering::Acquire);
 
             // Check if the channel is disconnected.
             if tail & MARK_BIT != 0 {
                 token.block = ptr::null();
-                break;
+                break 'no_skip;
             }
 
             // Calculate the offset of the index into the block.
@@ -225,7 +231,7 @@ impl<T> Channel<T> {
             if offset > NEAR_BLOCK_CAP {
                 // If we reached the end of the block, wait until the next one is installed.
                 backoff.snooze();
-                continue;
+                continue 'no_skip;
             } else if block.is_null() {
                 // If this is the first message to be sent into the channel, we need to allocate
                 // the first block and install it.
@@ -241,7 +247,7 @@ impl<T> Channel<T> {
                     block = new;
                 } else {
                     next_block = new;
-                    continue;
+                    continue 'no_skip;
                 }
             } else if offset == NEAR_BLOCK_CAP && next_block.is_null() {
                 // If we're going to have to install the next block, allocate it in advance in
@@ -268,12 +274,16 @@ impl<T> Channel<T> {
 
                     token.block = block as *const u8;
                     token.offset = offset;
-                    break;
+                    break 'no_skip;
                 },
-                Err(_) => {
+                Err(t) => {
                     backoff.spin();
+                    tail = t;
+                    continue 'skip_index;
                 }
             }
+            break 'skip_index;
+        }
         }
 
         if !next_block.is_null() {
@@ -306,8 +316,9 @@ impl<T> Channel<T> {
         let mut head;
         let mut block;
 
-        loop {
+        'no_skip: loop {
             head = self.head.index.load(Ordering::Acquire);
+            'skip_head: loop {
             block = self.head.block.load(Ordering::Acquire);
 
             // Calculate the offset of the index into the block.
@@ -316,7 +327,7 @@ impl<T> Channel<T> {
             // If we reached the end of the block, wait until the next one is installed.
             if offset == BLOCK_CAP {
                 backoff.snooze();
-                continue;
+                continue 'no_skip;
             }
 
             let mut new_head = head + (1 << SHIFT);
@@ -348,7 +359,7 @@ impl<T> Channel<T> {
             // In that case, just wait until it gets initialized.
             if block.is_null() {
                 backoff.snooze();
-                continue;
+                continue 'no_skip;
             }
 
             // Try moving the head index forward.
@@ -375,10 +386,14 @@ impl<T> Channel<T> {
                     token.offset = offset;
                     return true;
                 },
-                Err(_) => {
+                Err(h) => {
+                    head = h;
                     backoff.spin();
+                    continue 'skip_head;
                 }
             }
+            break 'skip_head;
+        }
         }
     }
 
