@@ -25,8 +25,8 @@ use crate::waker::SyncWaker;
 // * If a message has been written into the slot, `WRITE` is set.
 // * If a message has been read from the slot, `READ` is set.
 // * If the block is being destroyed, `DESTROY` is set.
-type State = usize;
-type AtomicState = AtomicUsize;
+type State = u8;
+type AtomicState = AtomicU8;
 const WRITE: State = 1;
 const READ: State = 2;
 const DESTROY: State = 4;
