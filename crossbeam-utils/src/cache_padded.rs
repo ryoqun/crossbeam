@@ -183,14 +183,12 @@ impl<T> CachePadded<T> {
 impl<T> Deref for CachePadded<T> {
     type Target = T;
 
-    #[inline(always)]
     fn deref(&self) -> &T {
         &self.value
     }
 }
 
 impl<T> DerefMut for CachePadded<T> {
-    #[inline(always)]
     fn deref_mut(&mut self) -> &mut T {
         &mut self.value
     }
