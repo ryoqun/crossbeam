@@ -102,7 +102,7 @@ impl<T> Block<T> {
         let i2 = (i % 16) * 16 + i / 16;
         //let i2 = (i % 16) + i / 16;
         Slot {
-            msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i) },
+            msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i2) },
             //state: unsafe { self.states.get_unchecked(i) },
             state: unsafe { self.states.get_unchecked(i2) },
         }
