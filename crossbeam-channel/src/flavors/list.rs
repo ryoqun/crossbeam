@@ -183,7 +183,7 @@ pub(crate) struct Channel<T> {
 impl<T> Channel<T> {
     /// Creates a new unbounded channel.
     pub(crate) fn new() -> Self {
-        Self {
+        let n = Self {
             head: CachePadded::new(Position {
                 block: AtomicPtr::new(ptr::null_mut()),
                 index: AtomicUsize::new(0),
@@ -194,7 +194,21 @@ impl<T> Channel<T> {
             }),
             receivers: SyncWaker::new(),
             _marker: PhantomData,
+        };
+        // we need to allocate the first block and install it.
+        let new = Box::into_raw(Box::new(Block::<T>::new()));
+        let block = n.tail.block.load(Ordering::Acquire);
+
+        while n
+            .tail
+            .block
+            .compare_exchange(block, new, Ordering::Release, Ordering::Relaxed)
+            .is_err()
+        {
+            n.head.block.store(new, Ordering::Release);
+
         }
+        n
     }
 
     /// Returns a receiver handle to the channel.
@@ -231,23 +245,6 @@ impl<T> Channel<T> {
                 // If we reached the end of the block, wait until the next one is installed.
                 backoff.snooze();
                 continue;
-            } else if block.is_null() {
-                // If this is the first message to be sent into the channel, we need to allocate
-                // the first block and install it.
-                let new = Box::into_raw(Box::new(Block::<T>::new()));
-
-                if self
-                    .tail
-                    .block
-                    .compare_exchange(block, new, Ordering::Release, Ordering::Relaxed)
-                    .is_ok()
-                {
-                    self.head.block.store(new, Ordering::Release);
-                    block = new;
-                } else {
-                    next_block = new;
-                    continue;
-                }
             } else if offset == NEAR_BLOCK_CAP && next_block.is_null() {
                 // If we're going to have to install the next block, allocate it in advance in
                 // order to make the wait for other threads as short as possible.
@@ -347,13 +344,6 @@ impl<T> Channel<T> {
                 if (head >> SHIFT) / LAP != (tail >> SHIFT) / LAP {
                     new_head |= MARK_BIT;
                 }
-            }
-
-            // The block can be null here only if the first message is being sent into the channel.
-            // In that case, just wait until it gets initialized.
-            if block.is_null() {
-                backoff.snooze();
-                continue;
             }
 
             // Try moving the head index forward.
