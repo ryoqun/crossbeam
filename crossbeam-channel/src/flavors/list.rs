@@ -203,11 +203,9 @@ impl<T> Channel<T> {
             .tail
             .block
             .compare_exchange(block, new, Ordering::Release, Ordering::Relaxed)
-            .is_err()
-        {
-            n.head.block.store(new, Ordering::Release);
+            .is_err() { }
 
-        }
+            n.head.block.store(new, Ordering::Release);
         n
     }
 
