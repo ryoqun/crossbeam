@@ -74,7 +74,7 @@ struct Block<T> {
 }
 
 impl<T> Block<T> {
-    const SLOT: (AtomicState, UnsafeCell<MaybeUninit<T>>) = panic!();
+    const SLOT: (AtomicState, UnsafeCell<MaybeUninit<T>>) = (AtomicState::new(0), UnsafeCell::new(MaybeUninit::uninit()));
 
     /// Creates an empty block.
     fn new() -> Self {
