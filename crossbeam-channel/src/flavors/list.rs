@@ -32,7 +32,7 @@ const READ: State = 2;
 const DESTROY: State = 4;
 
 // Each block covers one "lap" of indices.
-const LAP: usize = 256;
+const LAP: usize = 32;
 // The maximum number of messages a block can hold.
 const BLOCK_CAP: usize = LAP - 1;
 const NEAR_BLOCK_CAP: usize = LAP - 2;
@@ -101,12 +101,12 @@ impl<T> Block<T> {
     }
 
     unsafe fn get_slot_unchecked(&self, i: usize) -> Slot<'_, T> {
-        let i2 = (i % 16) * 16 + i / 16;
+        //let i2 = (i % 16) * 16 + i / 16;
         //let i2 = (i % 16) + i / 16;
         Slot {
             msg: unsafe { &self.slots.get_unchecked(i).1 },
-            //state: unsafe { self.states.get_unchecked(i) },
-            state: unsafe { &self.slots.get_unchecked(i2).0 },
+            state: unsafe { self.states.get_unchecked(i) },
+            //state: unsafe { &self.slots.get_unchecked(i2).0 },
         }
     }
 
