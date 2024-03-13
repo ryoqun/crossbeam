@@ -46,7 +46,7 @@ const MARK_BIT: usize = 1;
 /// A slot in a block.
 struct Slot<'a, T> {
     state: &'a AtomicState,
-    msg: &'a UnsafeCell<T>,
+    msg: &'a UnsafeCell<MaybeUninit<T>>,
 }
 
 impl<T> Slot<'_, T> {
@@ -67,13 +67,15 @@ struct Block<T> {
     next: AtomicPtr<Block<T>>,
 
     /// states for slots.
-    states: [AtomicState; BLOCK_CAP],
+    slots: [(AtomicState, UnsafeCell<MaybeUninit<T>>); BLOCK_CAP],
 
-    /// messages for slots.
-    msgs: MaybeUninit<[UnsafeCell<T>; BLOCK_CAP]>,
+    //// messages for slots.
+    //msgs: MaybeUninit<[UnsafeCell<T>; BLOCK_CAP]>,
 }
 
 impl<T> Block<T> {
+    const SLOT: (AtomicState, UnsafeCell<MaybeUninit<T>>) = panic!();
+
     /// Creates an empty block.
     fn new() -> Self {
         #[allow(clippy::declare_interior_mutable_const)]
@@ -81,8 +83,8 @@ impl<T> Block<T> {
 
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
-            states: [UNINIT_STATE; BLOCK_CAP],
-            msgs: MaybeUninit::uninit(),
+            slots: [Self::SLOT; BLOCK_CAP],
+            //msgs: MaybeUninit::uninit(),
         }
     }
 
@@ -102,9 +104,9 @@ impl<T> Block<T> {
         let i2 = (i % 16) * 16 + i / 16;
         //let i2 = (i % 16) + i / 16;
         Slot {
-            msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i) },
+            msg: unsafe { &self.slots.get_unchecked(i).1 },
             //state: unsafe { self.states.get_unchecked(i) },
-            state: unsafe { self.states.get_unchecked(i2) },
+            state: unsafe { &self.slots.get_unchecked(i2).0 },
         }
     }
 
@@ -297,7 +299,7 @@ impl<T> Channel<T> {
         let block = token.block.cast::<Block<T>>();
         let offset = token.offset;
         let slot = unsafe { (*block).get_slot_unchecked(offset) };
-        unsafe { slot.msg.get().write(msg) }
+        unsafe { slot.msg.get().write(MaybeUninit::new(msg)) }
         slot.state.fetch_or(WRITE, Ordering::Release);
 
         // Wake a sleeping receiver.
@@ -399,7 +401,7 @@ impl<T> Channel<T> {
         let offset = token.offset;
         let slot = unsafe { (*block).get_slot_unchecked(offset) };
         slot.wait_write();
-        let msg = unsafe { slot.msg.get().read() };
+        let msg = unsafe { slot.msg.get().read().assume_init() };
 
         // Destroy the block if we've reached the end, or if another thread wanted to destroy but
         // couldn't because we were busy reading from the slot.
@@ -618,7 +620,7 @@ impl<T> Channel<T> {
                     // Drop the message in the slot.
                     let slot = (*block).get_slot_unchecked(offset);
                     slot.wait_write();
-                    drop(ptr::read(slot.msg.get()));
+                    drop(ptr::read(slot.msg));
                 } else {
                     (*block).wait_next();
                     // Deallocate the block and move to the next one.
@@ -674,9 +676,7 @@ impl<T> Drop for Channel<T> {
 
                 if offset < BLOCK_CAP {
                     // Drop the message in the slot.
-                    let msg =
-                        ptr::read((*block).msgs.assume_init_ref().get_unchecked(offset).get());
-                    drop(msg);
+                    (*(*block).slots.get_unchecked(offset).1.get()).assume_init_drop();
                 } else {
                     // Deallocate the block and move to the next one.
                     let next = *(*block).next.get_mut();
