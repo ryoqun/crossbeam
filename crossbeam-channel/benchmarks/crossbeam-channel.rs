@@ -29,6 +29,7 @@ fn spsc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
         scope.spawn(|_| {
+            set_for_current();
             for i in 0..MESSAGES {
                 tx.send(message::new(i)).unwrap();
             }
@@ -47,6 +48,7 @@ fn mpsc(cap: Option<usize>) {
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
             scope.spawn(|_| {
+            set_for_current();
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -60,12 +62,25 @@ fn mpsc(cap: Option<usize>) {
     .unwrap();
 }
 
+use std::sync::Mutex;
+use core_affinity::CoreId;
+
+fn set_for_current() {
+    static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
+    let mut v = CPU_IDS.lock().unwrap();
+    if v.is_empty() {
+        *v = core_affinity::get_core_ids().unwrap()
+    }
+    core_affinity::set_for_current(v.pop().unwrap());
+}
+
 fn mpmc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
             scope.spawn(|_| {
+            set_for_current();
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -74,6 +89,7 @@ fn mpmc(cap: Option<usize>) {
 
         for _ in 0..THREADS {
             scope.spawn(|_| {
+            set_for_current();
                 for _ in 0..MESSAGES / THREADS {
                     rx.recv().unwrap();
                 }
@@ -90,6 +106,7 @@ fn select_rx(cap: Option<usize>) {
         for (tx, _) in &chans {
             let tx = tx.clone();
             scope.spawn(move |_| {
+            set_for_current();
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -115,6 +132,7 @@ fn select_both(cap: Option<usize>) {
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
             scope.spawn(|_| {
+            set_for_current();
                 for i in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
                     for (tx, _) in &chans {
@@ -129,6 +147,7 @@ fn select_both(cap: Option<usize>) {
 
         for _ in 0..THREADS {
             scope.spawn(|_| {
+            set_for_current();
                 for _ in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
                     for (_, rx) in &chans {
@@ -159,6 +178,7 @@ fn main() {
         };
     }
 
+    /*
     run!("bounded0_mpmc", mpmc(Some(0)));
     run!("bounded0_mpsc", mpsc(Some(0)));
     run!("bounded0_select_both", select_both(Some(0)));
@@ -177,7 +197,9 @@ fn main() {
     run!("bounded_select_rx", select_rx(Some(MESSAGES)));
     run!("bounded_seq", seq(Some(MESSAGES)));
     run!("bounded_spsc", spsc(Some(MESSAGES)));
+    */
 
+    set_for_current();
     run!("unbounded_mpmc", mpmc(None));
     run!("unbounded_mpsc", mpsc(None));
     run!("unbounded_select_both", select_both(None));
