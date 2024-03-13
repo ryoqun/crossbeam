@@ -183,30 +183,21 @@ pub(crate) struct Channel<T> {
 impl<T> Channel<T> {
     /// Creates a new unbounded channel.
     pub(crate) fn new() -> Self {
-        let n = Self {
+        // we need to allocate the first block and install it.
+        let first_block = Box::into_raw(Box::new(Block::<T>::new()));
+
+        Self {
             head: CachePadded::new(Position {
-                block: AtomicPtr::new(ptr::null_mut()),
+                block: AtomicPtr::new(first_block),
                 index: AtomicUsize::new(0),
             }),
             tail: CachePadded::new(Position {
-                block: AtomicPtr::new(ptr::null_mut()),
+                block: AtomicPtr::new(first_block),
                 index: AtomicUsize::new(0),
             }),
             receivers: SyncWaker::new(),
             _marker: PhantomData,
-        };
-        // we need to allocate the first block and install it.
-        let new = Box::into_raw(Box::new(Block::<T>::new()));
-        let block = n.tail.block.load(Ordering::Acquire);
-
-        while n
-            .tail
-            .block
-            .compare_exchange(block, new, Ordering::Release, Ordering::Relaxed)
-            .is_err() { }
-
-            n.head.block.store(new, Ordering::Release);
-        n
+        }
     }
 
     /// Returns a receiver handle to the channel.
