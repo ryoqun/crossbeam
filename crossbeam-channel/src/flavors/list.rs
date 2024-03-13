@@ -32,7 +32,7 @@ const READ: State = 2;
 const DESTROY: State = 4;
 
 // Each block covers one "lap" of indices.
-const LAP: usize = 64;
+const LAP: usize = 256;
 // The maximum number of messages a block can hold.
 const BLOCK_CAP: usize = LAP - 1;
 const NEAR_BLOCK_CAP: usize = LAP - 2;
@@ -99,8 +99,8 @@ impl<T> Block<T> {
     }
 
     unsafe fn get_slot_unchecked(&self, i: usize) -> Slot<'_, T> {
-        //let i2 = (i % 16) * 16 + i / 16;
-        let i2 = (i % 16) * 4 + i / 16;
+        let i2 = (i % 16) * 16 + i / 16;
+        //let i2 = (i % 16) + i / 16;
         Slot {
             msg: unsafe { self.msgs.assume_init_ref().get_unchecked(i) },
             //state: unsafe { self.states.get_unchecked(i) },
@@ -108,20 +108,16 @@ impl<T> Block<T> {
         }
     }
 
-    unsafe fn get_state_unchecked(&self, i: usize) -> &AtomicUsize {
-        unsafe { self.states.get_unchecked(i) }
-    }
-
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
-        for i in start..BLOCK_CAP {
-            let state = unsafe { (*this).get_state_unchecked(i) };
+        for i in start..BLOCK_CAP - 1 {
+            let slot = unsafe { (*this).get_slot_unchecked(i) };
 
             // Mark the `DESTROY` bit if a thread is still using the slot.
-            if state.load(Ordering::Acquire) & READ == 0
-                && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
+            if slot.state.load(Ordering::Acquire) & READ == 0
+                && slot.state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
             {
                 // If a thread is still using the slot, it will continue destruction of the block.
                 return;
