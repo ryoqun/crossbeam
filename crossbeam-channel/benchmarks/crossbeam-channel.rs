@@ -76,7 +76,8 @@ fn spmc(cap: Option<usize>) {
 
         for _ in 0..THREADS {
             let core_id = core_id();
-            scope.spawn(|_| {
+            let rx = rx.clone();
+            scope.spawn(move |_| {
             set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     rx.recv().unwrap();
