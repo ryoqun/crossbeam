@@ -257,5 +257,5 @@ fn bench_mpmc(bencher: &mut Criterion) {
 
 
 use criterion::{criterion_group, criterion_main, Criterion};
-criterion_group!(benches, bench_mpmc);
+criterion_group!(benches, bench_mpmc, bench_mpmc);
 criterion_main!(benches);
