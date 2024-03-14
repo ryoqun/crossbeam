@@ -109,7 +109,7 @@ fn set_on_main_thread() {
    if !IS_SET.get() {
        IS_SET.set(true);
        let core_id = core_id();
-       set_for_current(core_id);
+       set_for_current(CPU_IDS.lock().unwrap().last().unwrap());
    }
    CPU_IDS.lock().unwrap().clear();
 }
