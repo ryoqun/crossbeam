@@ -104,6 +104,10 @@ fn set_on_main_thread() {
    thread_local! {
        static IS_SET: bool = false;
    }
+   if !IS_SET {
+       IS_SET = true;
+       core_id();
+   }
 }
 
 fn mpmc(cap: Option<usize>) {
