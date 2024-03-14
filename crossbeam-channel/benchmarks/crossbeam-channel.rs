@@ -165,7 +165,7 @@ fn select_both(cap: Option<usize>) {
             set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
-                    for (tx, _) in &chans {
+                    for (tx, _) in &chans.iter() {
                         sel.send(tx);
                     }
                     let case = sel.select();
