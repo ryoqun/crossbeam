@@ -100,6 +100,12 @@ fn core_id() -> CoreId {
     v.pop().unwrap()
 }
 
+fn set_on_main_thread() {
+   thread_local! {
+       static IS_SET: bool = false;
+   }
+}
+
 fn mpmc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
 
