@@ -284,5 +284,5 @@ fn bench_spsc(bencher: &mut Criterion) {
 
 
 use criterion::{criterion_group, criterion_main, Criterion};
-criterion_group!(benches, bench_mpmc, bench_mpmc, bench_spmc, bench_select_both, bench_select_rx, bench_seq, bench_spsc);
+criterion_group!(benches, bench_mpmc, bench_mpsc, bench_spmc, bench_select_both, bench_select_rx, bench_seq, bench_spsc);
 criterion_main!(benches);
