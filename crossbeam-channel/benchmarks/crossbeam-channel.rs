@@ -26,11 +26,12 @@ fn seq(cap: Option<usize>) {
 
 fn spsc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
-    let core_id = core_id().clone();
 
     crossbeam::scope(|scope| {
-        scope.spawn(|_| {
-            set_for_current(core_id.clone());
+            let core_id = core_id();
+            let tx = tx.clone();
+        scope.spawn(move |_| {
+            set_for_current(core_id);
             for i in 0..MESSAGES {
                 tx.send(message::new(i)).unwrap();
             }
@@ -45,12 +46,12 @@ fn spsc(cap: Option<usize>) {
 
 fn mpsc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
-    let core_ids = vec![core_id(); THREADS];
 
-    std::thread::scope(|scope| {
-        for i in 0..THREADS {
-            scope.spawn(|| {
-                set_for_current(core_ids[i]);
+    crossbeam::scope(|scope| {
+        for _ in 0..THREADS {
+            let core_id = core_id();
+            scope.spawn(|_| {
+            set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -60,7 +61,8 @@ fn mpsc(cap: Option<usize>) {
         for _ in 0..MESSAGES {
             rx.recv().unwrap();
         }
-    });
+    })
+    .unwrap();
 }
 
 fn spmc(cap: Option<usize>) {
