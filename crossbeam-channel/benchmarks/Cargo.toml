@@ -31,10 +31,13 @@ name = "bus"
 path = "bus.rs"
 doc = false
 
-[[bin]]
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
 name = "crossbeam-channel"
 path = "crossbeam-channel.rs"
-doc = false
+harness = false
 
 [[bin]]
 name = "crossbeam-deque"
