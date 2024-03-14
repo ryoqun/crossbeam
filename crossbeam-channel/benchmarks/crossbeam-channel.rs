@@ -102,10 +102,10 @@ fn core_id() -> CoreId {
 
 fn set_on_main_thread() {
    thread_local! {
-       static IS_SET: bool = false;
+       static IS_SET: bool = const { false };
    }
-   if !IS_SET {
-       IS_SET = true;
+   if !IS_SET.get() {
+       IS_SET.set(true);
        core_id();
    }
 }
