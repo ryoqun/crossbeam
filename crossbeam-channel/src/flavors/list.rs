@@ -30,7 +30,7 @@ const READ: usize = 2;
 const DESTROY: usize = 4;
 
 // Each block covers one "lap" of indices.
-const LAP: usize = 256;
+const LAP: usize = 32;
 // The maximum number of messages a block can hold.
 const BLOCK_CAP: usize = LAP - 1;
 // How many lower bits are reserved for metadata.
