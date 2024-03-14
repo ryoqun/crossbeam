@@ -247,7 +247,7 @@ fn main() {
 }
 */
 fn bench_mpmc(criterion: &mut Criterion) {
-    criterion.bench_function("aaa", move |b| {
+    criterion.bench_function("aaa", |b| {
         b.iter(|| {
             mpmc(None);
         });
