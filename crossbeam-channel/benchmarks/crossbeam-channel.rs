@@ -48,7 +48,7 @@ fn mpsc(cap: Option<usize>) {
     let core_ids = vec![core_id(); THREADS];
 
     std::thread::scope(|scope| {
-        for _ in 0..THREADS {
+        for i in 0..THREADS {
             scope.spawn(|| {
                 set_for_current(core_ids[i]);
                 for i in 0..MESSAGES / THREADS {
