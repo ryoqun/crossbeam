@@ -60,8 +60,7 @@ fn mpsc(cap: Option<usize>) {
         for _ in 0..MESSAGES {
             rx.recv().unwrap();
         }
-    })
-    .unwrap();
+    });
 }
 
 fn spmc(cap: Option<usize>) {
