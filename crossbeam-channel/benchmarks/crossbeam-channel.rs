@@ -94,7 +94,7 @@ fn core_id() -> CoreId {
     if v.is_empty() {
         *v = core_affinity::get_core_ids().unwrap()
     }
-    v.pop().unwrap();
+    v.pop().unwrap()
 }
 
 fn mpmc(cap: Option<usize>) {
