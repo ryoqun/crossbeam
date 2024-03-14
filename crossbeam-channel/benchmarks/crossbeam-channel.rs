@@ -102,7 +102,7 @@ fn core_id() -> CoreId {
 
 fn set_on_main_thread() {
    thread_local! {
-       static IS_SET: std::cell::Cell<bool> = const { Cell::new(false) };
+       static IS_SET: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
    }
    if !IS_SET.get() {
        IS_SET.set(true);
