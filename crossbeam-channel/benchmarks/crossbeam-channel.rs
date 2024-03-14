@@ -25,14 +25,14 @@ fn seq(cap: Option<usize>) {
 }
 
 fn spsc(cap: Option<usize>) {
-    let (&tx, rx) = new(cap);
+    let (tx, rx) = new(cap);
 
     crossbeam::scope(|scope| {
             let core_id = core_id();
         scope.spawn(move |_| {
             set_for_current(core_id);
             for i in 0..MESSAGES {
-                tx.send(message::new(i)).unwrap();
+                &tx.send(message::new(i)).unwrap();
             }
         });
 
