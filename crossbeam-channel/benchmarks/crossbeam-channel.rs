@@ -29,7 +29,7 @@ fn spsc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
             let core_id = core_id();
-        scope.spawn(|_| {
+        scope.spawn(move |_| {
             set_for_current(core_id);
             for i in 0..MESSAGES {
                 tx.send(message::new(i)).unwrap();
