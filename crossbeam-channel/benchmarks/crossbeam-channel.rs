@@ -249,7 +249,8 @@ fn main() {
 fn bench_mpmc(bencher: &mut Criterion) {
     bencher.bench_function("aaa", |b| {
         b.iter(|| {
-            mpmc(None);
+            //mpmc(None);
+            loop{}
         });
     });
 }
