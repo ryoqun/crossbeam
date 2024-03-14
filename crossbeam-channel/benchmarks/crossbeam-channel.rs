@@ -247,14 +247,42 @@ fn main() {
 }
 */
 fn bench_mpmc(bencher: &mut Criterion) {
-    bencher.bench_function("aaa", |b| {
-        b.iter(|| {
-            mpmc(None);
-        });
-    });
+    bencher.bench_function("mpmc", |b| { b.iter(|| {
+        mpmc(None);
+    }); });
+}
+fn bench_mpsc(bencher: &mut Criterion) {
+    bencher.bench_function("mpsc", |b| { b.iter(|| {
+        mpsc(None);
+    }); });
+}
+fn bench_spmc(bencher: &mut Criterion) {
+    bencher.bench_function("spmc", |b| { b.iter(|| {
+        spmc(None);
+    }); });
+}
+fn bench_select_both(bencher: &mut Criterion) {
+    bencher.bench_function("select_both", |b| { b.iter(|| {
+        select_both(None);
+    }); });
+}
+fn bench_select_rx(bencher: &mut Criterion) {
+    bencher.bench_function("select_rx", |b| { b.iter(|| {
+        select_rx(None);
+    }); });
+}
+fn bench_seq(bencher: &mut Criterion) {
+    bencher.bench_function("seq", |b| { b.iter(|| {
+        seq(None);
+    }); });
+}
+fn bench_spsc(bencher: &mut Criterion) {
+    bencher.bench_function("spsc", |b| { b.iter(|| {
+        spsc(None);
+    }); });
 }
 
 
 use criterion::{criterion_group, criterion_main, Criterion};
-criterion_group!(benches, bench_mpmc);
+criterion_group!(benches, bench_mpmc, bench_mpmc, bench_spmc, bench_select_both, bench_select_rx, bench_seq, bench_spsc);
 criterion_main!(benches);
