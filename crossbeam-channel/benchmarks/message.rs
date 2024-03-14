@@ -1,6 +1,6 @@
 use std::fmt;
 
-const LEN: usize = 10;
+const LEN: usize = 1;
 
 #[derive(Clone, Copy)]
 pub(crate) struct Message(#[allow(dead_code)] [usize; LEN]);
