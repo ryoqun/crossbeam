@@ -25,9 +25,11 @@ use crate::waker::SyncWaker;
 // * If a message has been written into the slot, `WRITE` is set.
 // * If a message has been read from the slot, `READ` is set.
 // * If the block is being destroyed, `DESTROY` is set.
-const WRITE: usize = 1;
-const READ: usize = 2;
-const DESTROY: usize = 4;
+type State = usize;
+type AtomicState = std::sync::atomic::AtomicU8;
+const WRITE: State = 1;
+const READ: State = 2;
+const DESTROY: State = 4;
 
 // Each block covers one "lap" of indices.
 const LAP: usize = 256;
@@ -42,7 +44,7 @@ const MARK_BIT: usize = 1;
 
 /// A slot in a block.
 struct Slot<'a, T> {
-    state: &'a AtomicUsize,
+    state: &'a AtomicState,
     msg: &'a UnsafeCell<MaybeUninit<T>>,
 }
 
@@ -63,12 +65,12 @@ struct Block<T> {
     /// The next block in the linked list.
     next: AtomicPtr<Block<T>>,
 
-    states: [AtomicUsize; BLOCK_CAP],
+    states: [AtomicState; BLOCK_CAP],
     msgs: MaybeUninit<[UnsafeCell<MaybeUninit<T>>; BLOCK_CAP]>,
 }
 
 impl<T> Block<T> {
-    const UNINIT: AtomicUsize = AtomicUsize::new(0);
+    const UNINIT: AtomicState = AtomicState::new(0);
 
     /// Creates an empty block.
     fn new() -> Self {
