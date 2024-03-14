@@ -30,7 +30,7 @@ fn spsc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
         scope.spawn(|_| {
-            set_for_current(core_id_f());
+            set_for_current(core_id);
             for i in 0..MESSAGES {
                 tx.send(message::new(i)).unwrap();
             }
