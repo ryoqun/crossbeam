@@ -45,12 +45,12 @@ fn spsc(cap: Option<usize>) {
 
 fn mpsc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
+    let core_ids = vec![core_id(); THREADS];
 
     crossbeam::scope(|scope| {
-        for _ in 0..THREADS {
-            let core_id = core_id();
+        for i in 0..THREADS {
             scope.spawn(|_| {
-            set_for_current(core_id);
+                set_for_current(core_ids[i]);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
