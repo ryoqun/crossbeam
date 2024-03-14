@@ -155,7 +155,7 @@ fn select_rx(cap: Option<usize>) {
 }
 
 fn select_both(cap: Option<usize>) {
-    let chans = Arc::new((0..THREADS).map(|_| new(cap)).collect::<Vec<_>>());
+    let chans = std::sync::Arc::new((0..THREADS).map(|_| new(cap)).collect::<Vec<_>>());
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
