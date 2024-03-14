@@ -62,6 +62,26 @@ fn mpsc(cap: Option<usize>) {
     .unwrap();
 }
 
+fn spmc(cap: Option<usize>) {
+    let (tx, rx) = new(cap);
+
+    crossbeam::scope(|scope| {
+        for i in 0..MESSAGES {
+            tx.send(message::new(i)).unwrap();
+        }
+
+        for _ in 0..THREADS {
+            scope.spawn(|_| {
+            set_for_current();
+                for _ in 0..MESSAGES / THREADS {
+                    rx.recv().unwrap();
+                }
+            });
+        }
+    })
+    .unwrap();
+}
+
 use std::sync::Mutex;
 use core_affinity::CoreId;
 
@@ -202,6 +222,7 @@ fn main() {
     set_for_current();
     run!("unbounded_mpmc", mpmc(None));
     run!("unbounded_mpsc", mpsc(None));
+    run!("unbounded_spmc", spmc(None));
     run!("unbounded_select_both", select_both(None));
     run!("unbounded_select_rx", select_rx(None));
     run!("unbounded_seq", seq(None));
