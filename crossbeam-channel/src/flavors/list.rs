@@ -97,7 +97,7 @@ impl<T> Block<T> {
         let i2 = (i % 16) * 16 + i / 16;
         //let i2 = (i % 16) + i / 16;
         Slot {
-            msg: unsafe { &self.slots.get_unchecked(i).1 },
+            msg: unsafe { &self.slots.get_unchecked(i2).1 },
             state: unsafe { &self.slots.get_unchecked(i2).0 },
         }
     }
