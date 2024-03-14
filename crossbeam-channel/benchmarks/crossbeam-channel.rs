@@ -2,7 +2,7 @@ use crossbeam_channel::{bounded, unbounded, Receiver, Select, Sender};
 
 mod message;
 
-const MESSAGES: usize = 50_000_000;
+const MESSAGES: usize = 500_000;
 const THREADS: usize = 4;
 
 fn new<T>(cap: Option<usize>) -> (Sender<T>, Receiver<T>) {
@@ -28,8 +28,10 @@ fn spsc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
 
     crossbeam::scope(|scope| {
-        scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let tx = tx.clone();
+        scope.spawn(move |_| {
+            set_for_current(core_id);
             for i in 0..MESSAGES {
                 tx.send(message::new(i)).unwrap();
             }
@@ -47,8 +49,10 @@ fn mpsc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let tx = tx.clone();
+            scope.spawn(move |_| {
+            set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -71,8 +75,10 @@ fn spmc(cap: Option<usize>) {
         }
 
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let rx = rx.clone();
+            scope.spawn(move |_| {
+            set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     rx.recv().unwrap();
                 }
@@ -83,15 +89,29 @@ fn spmc(cap: Option<usize>) {
 }
 
 use std::sync::Mutex;
-use core_affinity::CoreId;
+use core_affinity::{CoreId, set_for_current};
+static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
 
-fn set_for_current() {
-    static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
+fn core_id() -> CoreId {
     let mut v = CPU_IDS.lock().unwrap();
     if v.is_empty() {
-        *v = core_affinity::get_core_ids().unwrap()
+        let mut cc = core_affinity::get_core_ids().unwrap();
+        let cc2 = cc.split_off(cc.len()/2);
+        *v = cc2;
     }
-    core_affinity::set_for_current(v.pop().unwrap());
+    v.pop().unwrap()
+}
+
+fn set_on_main_thread() {
+   thread_local! {
+       static IS_SET: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+   }
+   if !IS_SET.get() {
+       IS_SET.set(true);
+       let core_id = core_id();
+       set_for_current(*CPU_IDS.lock().unwrap().last().unwrap());
+   }
+   CPU_IDS.lock().unwrap().clear();
 }
 
 fn mpmc(cap: Option<usize>) {
@@ -99,8 +119,10 @@ fn mpmc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let tx = tx.clone();
+            scope.spawn(move |_| {
+                set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -108,8 +130,10 @@ fn mpmc(cap: Option<usize>) {
         }
 
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let rx = rx.clone();
+            scope.spawn(move |_| {
+            set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     rx.recv().unwrap();
                 }
@@ -125,8 +149,9 @@ fn select_rx(cap: Option<usize>) {
     crossbeam::scope(|scope| {
         for (tx, _) in &chans {
             let tx = tx.clone();
+            let core_id = core_id();
             scope.spawn(move |_| {
-            set_for_current();
+            set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
@@ -147,15 +172,17 @@ fn select_rx(cap: Option<usize>) {
 }
 
 fn select_both(cap: Option<usize>) {
-    let chans = (0..THREADS).map(|_| new(cap)).collect::<Vec<_>>();
+    let chans = std::sync::Arc::new((0..THREADS).map(|_| new(cap)).collect::<Vec<_>>());
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let chans = chans.clone();
+            scope.spawn(move |_| {
+            set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
-                    for (tx, _) in &chans {
+                    for (tx, _) in chans.iter() {
                         sel.send(tx);
                     }
                     let case = sel.select();
@@ -166,11 +193,13 @@ fn select_both(cap: Option<usize>) {
         }
 
         for _ in 0..THREADS {
-            scope.spawn(|_| {
-            set_for_current();
+            let core_id = core_id();
+            let chans = chans.clone();
+            scope.spawn(move |_| {
+            set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
-                    for (_, rx) in &chans {
+                    for (_, rx) in chans.iter() {
                         sel.recv(rx);
                     }
                     let case = sel.select();
@@ -183,6 +212,7 @@ fn select_both(cap: Option<usize>) {
     .unwrap();
 }
 
+/*
 fn main() {
     macro_rules! run {
         ($name:expr, $f:expr) => {
@@ -219,7 +249,8 @@ fn main() {
     run!("bounded_spsc", spsc(Some(MESSAGES)));
     */
 
-    set_for_current();
+    let core_id = core_id();
+    set_for_current(core_id);
     run!("unbounded_mpmc", mpmc(None));
     run!("unbounded_mpsc", mpsc(None));
     run!("unbounded_spmc", spmc(None));
@@ -228,3 +259,51 @@ fn main() {
     run!("unbounded_seq", seq(None));
     run!("unbounded_spsc", spsc(None));
 }
+*/
+fn bench_mpmc(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("mpmc", |b| { b.iter(|| {
+        mpmc(None);
+    }); });
+}
+fn bench_mpsc(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("mpsc", |b| { b.iter(|| {
+        mpsc(None);
+    }); });
+}
+fn bench_spmc(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("spmc", |b| { b.iter(|| {
+        spmc(None);
+    }); });
+}
+fn bench_select_both(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("select_both", |b| { b.iter(|| {
+        select_both(None);
+    }); });
+}
+fn bench_select_rx(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("select_rx", |b| { b.iter(|| {
+        select_rx(None);
+    }); });
+}
+fn bench_seq(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("seq", |b| { b.iter(|| {
+        seq(None);
+    }); });
+}
+fn bench_spsc(bencher: &mut Criterion) {
+    set_on_main_thread();
+    bencher.bench_function("spsc", |b| { b.iter(|| {
+        spsc(None);
+    }); });
+}
+
+
+use criterion::{criterion_group, criterion_main, Criterion};
+criterion_group!(benches, bench_mpmc, bench_mpsc, bench_spmc, bench_select_both, bench_select_rx, bench_seq, bench_spsc);
+criterion_main!(benches);
