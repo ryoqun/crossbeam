@@ -63,21 +63,19 @@ struct Block<T> {
     /// The next block in the linked list.
     next: AtomicPtr<Block<T>>,
 
-    /// Slots for messages.
-    slots: [(AtomicUsize, UnsafeCell<MaybeUninit<T>>); BLOCK_CAP],
+    states: [AtomicUsize; BLOCK_CAP],
+    msgs: MaybeUninit<[UnsafeCell<MaybeUninit<T>>; BLOCK_CAP]>,
 }
 
 impl<T> Block<T> {
-    const UNINIT: (AtomicUsize, UnsafeCell<MaybeUninit<T>>) = (
-        AtomicUsize::new(0),
-        UnsafeCell::new(MaybeUninit::uninit()),
-    );
+    const UNINIT: AtomicUsize = AtomicUsize::new(0);
 
     /// Creates an empty block.
     fn new() -> Self {
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
-            slots: [Self::UNINIT; BLOCK_CAP],
+            states: [Self::UNINIT; BLOCK_CAP],
+            msg: MaybeUninit::uninit(),
         }
     }
 
