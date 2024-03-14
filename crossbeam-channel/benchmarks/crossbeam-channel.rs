@@ -251,7 +251,7 @@ fn bench_mpmc(criterion: &mut Criterion) {
         b.iter(|| {
             mpmc(None);
         }
-    }
+    });
 }
 
 
