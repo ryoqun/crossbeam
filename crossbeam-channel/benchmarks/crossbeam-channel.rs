@@ -95,7 +95,7 @@ fn core_id() -> CoreId {
     static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
     let mut v = CPU_IDS.lock().unwrap();
     if v.is_empty() {
-        let mut cc = core_affinity::get_core_ids().unwrap()
+        let mut cc = core_affinity::get_core_ids().unwrap();
         let cc2 = cc.split_off(cc.len()/2);
         *v = cc2;
     }
