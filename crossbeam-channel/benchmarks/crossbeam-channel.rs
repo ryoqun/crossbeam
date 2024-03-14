@@ -161,7 +161,7 @@ fn select_both(cap: Option<usize>) {
         for _ in 0..THREADS {
             let core_id = core_id();
             let chans = chans.clone();
-            scope.spawn(|_| {
+            scope.spawn(move |_| {
             set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
@@ -178,7 +178,7 @@ fn select_both(cap: Option<usize>) {
         for _ in 0..THREADS {
             let core_id = core_id();
             let chans = chans.clone();
-            scope.spawn(|_| {
+            scope.spawn(move |_| {
             set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
