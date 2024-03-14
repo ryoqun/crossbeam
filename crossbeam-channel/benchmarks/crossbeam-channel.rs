@@ -49,7 +49,7 @@ fn mpsc(cap: Option<usize>) {
 
     std::thread::scope(|scope| {
         for _ in 0..THREADS {
-            scope.spawn(|i| {
+            scope.spawn(|| {
                 set_for_current(core_ids[i]);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
