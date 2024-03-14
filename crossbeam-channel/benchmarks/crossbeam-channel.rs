@@ -2,7 +2,7 @@ use crossbeam_channel::{bounded, unbounded, Receiver, Select, Sender};
 
 mod message;
 
-const MESSAGES: usize = 5_000_000;
+const MESSAGES: usize = 50_000_000;
 const THREADS: usize = 4;
 
 fn new<T>(cap: Option<usize>) -> (Sender<T>, Receiver<T>) {
