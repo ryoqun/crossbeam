@@ -25,7 +25,7 @@ fn seq(cap: Option<usize>) {
 }
 
 fn spsc(cap: Option<usize>) {
-    let (tx, rx) = new(cap);
+    let (&tx, rx) = new(cap);
 
     crossbeam::scope(|scope| {
             let core_id = core_id();
