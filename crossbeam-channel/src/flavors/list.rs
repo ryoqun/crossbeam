@@ -75,7 +75,7 @@ impl<T> Block<T> {
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
             states: [Self::UNINIT; BLOCK_CAP],
-            msg: MaybeUninit::uninit(),
+            msgs: MaybeUninit::uninit(),
         }
     }
 
