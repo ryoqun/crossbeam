@@ -47,7 +47,7 @@ fn mpsc(cap: Option<usize>) {
     let (tx, rx) = new(cap);
     let core_ids = vec![core_id(); THREADS];
 
-    crossbeam::scope(|scope| {
+    std::thread::scope(|scope| {
         for _ in 0..THREADS {
             scope.spawn(|i| {
                 set_for_current(core_ids[i]);
