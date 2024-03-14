@@ -30,7 +30,7 @@ const READ: usize = 2;
 const DESTROY: usize = 4;
 
 // Each block covers one "lap" of indices.
-const LAP: usize = 32;
+const LAP: usize = 256;
 // The maximum number of messages a block can hold.
 const BLOCK_CAP: usize = LAP - 1;
 // How many lower bits are reserved for metadata.
@@ -41,20 +41,12 @@ const SHIFT: usize = 1;
 const MARK_BIT: usize = 1;
 
 /// A slot in a block.
-struct Slot<T> {
-    /// The message.
-    msg: UnsafeCell<MaybeUninit<T>>,
-
-    /// The state of the slot.
-    state: AtomicUsize,
+struct Slot<'a, T> {
+    state: &'a AtomicUsize,
+    msg: &'a UnsafeCell<MaybeUninit<T>>,
 }
 
-impl<T> Slot<T> {
-    const UNINIT: Self = Self {
-        msg: UnsafeCell::new(MaybeUninit::uninit()),
-        state: AtomicUsize::new(0),
-    };
-
+impl<T> Slot<'_, T> {
     /// Waits until a message is written into the slot.
     fn wait_write(&self) {
         let backoff = Backoff::new();
@@ -72,15 +64,20 @@ struct Block<T> {
     next: AtomicPtr<Block<T>>,
 
     /// Slots for messages.
-    slots: [Slot<T>; BLOCK_CAP],
+    slots: [(AtomicUsize, UnsafeCell<MaybeUninit<T>>); BLOCK_CAP],
 }
 
 impl<T> Block<T> {
+    const UNINIT: (AtomicUsize, UnsafeCell<MaybeUninit<T>>) = (
+        AtomicUsize::new(0),
+        UnsafeCell::new(MaybeUninit::uninit()),
+    );
+
     /// Creates an empty block.
     fn new() -> Self {
         Self {
             next: AtomicPtr::new(ptr::null_mut()),
-            slots: [Slot::UNINIT; BLOCK_CAP],
+            slots: [Self::UNINIT; BLOCK_CAP],
         }
     }
 
@@ -96,12 +93,21 @@ impl<T> Block<T> {
         }
     }
 
+    unsafe fn get_slot_unchecked(&self, i: usize) -> Slot<'_, T> {
+        let i2 = (i % 16) * 16 + i / 16;
+        //let i2 = (i % 16) + i / 16;
+        Slot {
+            msg: unsafe { &self.slots.get_unchecked(i).1 },
+            state: unsafe { &self.slots.get_unchecked(i2).0 },
+        }
+    }
+
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in start..BLOCK_CAP - 1 {
-            let slot = unsafe { (*this).slots.get_unchecked(i) };
+            let slot = unsafe { (*this).get_slot_unchecked(i) };
 
             // Mark the `DESTROY` bit if a thread is still using the slot.
             if slot.state.load(Ordering::Acquire) & READ == 0
@@ -288,7 +294,7 @@ impl<T> Channel<T> {
         // Write the message into the slot.
         let block = token.list.block.cast::<Block<T>>();
         let offset = token.list.offset;
-        let slot = unsafe { (*block).slots.get_unchecked(offset) };
+        let slot = unsafe { (*block).get_slot_unchecked(offset) };
         unsafe { slot.msg.get().write(MaybeUninit::new(msg)) }
         slot.state.fetch_or(WRITE, Ordering::Release);
 
@@ -392,7 +398,7 @@ impl<T> Channel<T> {
         // Read the message.
         let block = token.list.block as *mut Block<T>;
         let offset = token.list.offset;
-        let slot = unsafe { (*block).slots.get_unchecked(offset) };
+        let slot = unsafe { (*block).get_slot_unchecked(offset) };
         slot.wait_write();
         let msg = unsafe { slot.msg.get().read().assume_init() };
 
@@ -609,7 +615,7 @@ impl<T> Channel<T> {
 
                 if offset < BLOCK_CAP {
                     // Drop the message in the slot.
-                    let slot = (*block).slots.get_unchecked(offset);
+                    let slot = (*block).get_slot_unchecked(offset);
                     slot.wait_write();
                     (*slot.msg.get()).assume_init_drop();
                 } else {
@@ -667,7 +673,7 @@ impl<T> Drop for Channel<T> {
 
                 if offset < BLOCK_CAP {
                     // Drop the message in the slot.
-                    let slot = (*block).slots.get_unchecked(offset);
+                    let slot = (*block).get_slot_unchecked(offset);
                     (*slot.msg.get()).assume_init_drop();
                 } else {
                     // Deallocate the block and move to the next one.
