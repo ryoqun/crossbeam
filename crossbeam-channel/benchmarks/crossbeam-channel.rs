@@ -174,7 +174,7 @@ fn select_both(cap: Option<usize>) {
 
         for _ in 0..THREADS {
             let core_id = core_id();
-            scope.spawn(move |_| {
+            scope.spawn(|_| {
             set_for_current(core_id);
                 for _ in 0..MESSAGES / THREADS {
                     let mut sel = Select::new();
