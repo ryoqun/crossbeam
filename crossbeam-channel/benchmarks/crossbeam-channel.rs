@@ -198,6 +198,7 @@ fn select_both(cap: Option<usize>) {
     .unwrap();
 }
 
+/*
 fn main() {
     macro_rules! run {
         ($name:expr, $f:expr) => {
@@ -244,3 +245,16 @@ fn main() {
     run!("unbounded_seq", seq(None));
     run!("unbounded_spsc", spsc(None));
 }
+*/
+fn bench_mpmc(criterion: &mut Criterion) {
+    criterion.bench_function("aaa", move |b| {
+        b.iter(|| {
+            mpmc(None);
+        }
+    }
+}
+
+
+use criterion::{criterion_group, criterion_main, Criterion};
+criterion_group!(benches, bench_mpmc);
+criterion_main!(benches);
