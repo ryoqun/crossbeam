@@ -90,9 +90,9 @@ fn spmc(cap: Option<usize>) {
 
 use std::sync::Mutex;
 use core_affinity::{CoreId, set_for_current};
+static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
 
 fn core_id() -> CoreId {
-    static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
     let mut v = CPU_IDS.lock().unwrap();
     if v.is_empty() {
         let mut cc = core_affinity::get_core_ids().unwrap();
@@ -110,6 +110,7 @@ fn set_on_main_thread() {
        IS_SET.set(true);
        core_id();
    }
+   CPU_IDS.lock().unwrap().clear();
 }
 
 fn mpmc(cap: Option<usize>) {
