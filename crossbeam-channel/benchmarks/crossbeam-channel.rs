@@ -85,13 +85,13 @@ fn spmc(cap: Option<usize>) {
 use std::sync::Mutex;
 use core_affinity::CoreId;
 
-fn set_for_current() {
+fn core_id() -> CoreId {
     static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
     let mut v = CPU_IDS.lock().unwrap();
     if v.is_empty() {
         *v = core_affinity::get_core_ids().unwrap()
     }
-    core_affinity::set_for_current(v.pop().unwrap());
+    v.pop().unwrap();
 }
 
 fn mpmc(cap: Option<usize>) {
@@ -99,8 +99,9 @@ fn mpmc(cap: Option<usize>) {
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
+            let core_id = core_id();
             scope.spawn(|_| {
-            set_for_current();
+                set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
                 }
