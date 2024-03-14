@@ -246,9 +246,8 @@ fn main() {
     run!("unbounded_spsc", spsc(None));
 }
 */
-fn bench_mpmc(criterion: &mut Criterion) {
-    panic!();
-    criterion.bench_function("aaa", |b| {
+fn bench_mpmc(bencher: &mut Criterion) {
+    bencher.bench_function("aaa", |b| {
         b.iter(|| {
             mpmc(None);
         });
