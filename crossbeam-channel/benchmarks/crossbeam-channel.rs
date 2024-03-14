@@ -247,6 +247,7 @@ fn main() {
 }
 */
 fn bench_mpmc(criterion: &mut Criterion) {
+    panic!();
     criterion.bench_function("aaa", |b| {
         b.iter(|| {
             mpmc(None);
