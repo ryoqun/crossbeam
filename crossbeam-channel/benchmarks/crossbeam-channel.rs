@@ -2,7 +2,7 @@ use crossbeam_channel::{bounded, unbounded, Receiver, Select, Sender};
 
 mod message;
 
-const MESSAGES: usize = 50_000_000;
+const MESSAGES: usize = 500_000;
 const THREADS: usize = 4;
 
 fn new<T>(cap: Option<usize>) -> (Sender<T>, Receiver<T>) {
@@ -249,13 +249,12 @@ fn main() {
 fn bench_mpmc(bencher: &mut Criterion) {
     bencher.bench_function("aaa", |b| {
         b.iter(|| {
-            //mpmc(None);
-            loop{}
+            mpmc(None);
         });
     });
 }
 
 
 use criterion::{criterion_group, criterion_main, Criterion};
-criterion_group!(benches, bench_mpmc, bench_mpmc);
+criterion_group!(benches, bench_mpmc);
 criterion_main!(benches);
