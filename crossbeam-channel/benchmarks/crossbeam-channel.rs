@@ -155,11 +155,12 @@ fn select_rx(cap: Option<usize>) {
 }
 
 fn select_both(cap: Option<usize>) {
-    let chans = (0..THREADS).map(|_| new(cap)).collect::<Vec<_>>();
+    let chans = Arc::new((0..THREADS).map(|_| new(cap)).collect::<Vec<_>>());
 
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
             let core_id = core_id();
+            let chans = chans.clone();
             scope.spawn(|_| {
             set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
