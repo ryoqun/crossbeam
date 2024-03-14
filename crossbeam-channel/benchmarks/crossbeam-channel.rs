@@ -49,7 +49,7 @@ fn mpsc(cap: Option<usize>) {
     crossbeam::scope(|scope| {
         for _ in 0..THREADS {
             let core_id = core_id();
-            scope.spawn(move |_| {
+            scope.spawn(|_| {
             set_for_current(core_id);
                 for i in 0..MESSAGES / THREADS {
                     tx.send(message::new(i)).unwrap();
