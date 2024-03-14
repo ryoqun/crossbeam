@@ -257,36 +257,43 @@ fn main() {
 }
 */
 fn bench_mpmc(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("mpmc", |b| { b.iter(|| {
         mpmc(None);
     }); });
 }
 fn bench_mpsc(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("mpsc", |b| { b.iter(|| {
         mpsc(None);
     }); });
 }
 fn bench_spmc(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("spmc", |b| { b.iter(|| {
         spmc(None);
     }); });
 }
 fn bench_select_both(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("select_both", |b| { b.iter(|| {
         select_both(None);
     }); });
 }
 fn bench_select_rx(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("select_rx", |b| { b.iter(|| {
         select_rx(None);
     }); });
 }
 fn bench_seq(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("seq", |b| { b.iter(|| {
         seq(None);
     }); });
 }
 fn bench_spsc(bencher: &mut Criterion) {
+    set_on_main_thread();
     bencher.bench_function("spsc", |b| { b.iter(|| {
         spsc(None);
     }); });
