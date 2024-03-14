@@ -83,7 +83,7 @@ fn spmc(cap: Option<usize>) {
 }
 
 use std::sync::Mutex;
-use core_affinity::CoreId;
+use core_affinity::{CoreId, set_for_current};
 
 fn core_id() -> CoreId {
     static CPU_IDS: std::sync::Mutex<Vec<CoreId>> = Mutex::new(Vec::new());
