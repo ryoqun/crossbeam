@@ -27,6 +27,8 @@ use crate::waker::SyncWaker;
 // * If the block is being destroyed, `DESTROY` is set.
 type State = u8;
 type AtomicState = std::sync::atomic::AtomicU8;
+type Inex = u8;
+type AtomicIndex = std::sync::atomic::AtomicU8;
 const WRITE: State = 1;
 const READ: State = 2;
 const DESTROY: State = 4;
@@ -132,7 +134,7 @@ impl<T> Block<T> {
 #[derive(Debug)]
 struct Position<T> {
     /// The index in the channel.
-    index: AtomicUsize,
+    index: AtomicIndex,
 
     /// The block in the linked list.
     block: AtomicPtr<Block<T>>,
@@ -186,7 +188,7 @@ impl<T> Channel<T> {
         Self {
             head: CachePadded::new(Position {
                 block: AtomicPtr::new(first_block),
-                index: AtomicUsize::new(0),
+                index: AtomicIndex::new(0),
             }),
             tail: CachePadded::new(Position {
                 block: AtomicPtr::new(first_block),
