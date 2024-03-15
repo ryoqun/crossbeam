@@ -102,6 +102,7 @@ impl<T> Block<T> {
     }
 
     unsafe fn get_state_unchecked(&self, msg_index: usize) -> Slot<'_, T> {
+        let state_index = (msg_index % 16) * 16 + msg_index / 16;
         unsafe { &self.states.get_unchecked(state_index) }
     }
 
