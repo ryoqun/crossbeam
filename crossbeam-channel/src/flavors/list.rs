@@ -101,6 +101,11 @@ impl<T> Block<T> {
         }
     }
 
+    unsafe fn get_state_unchecked(&self, msg_index: usize) -> Slot<'_, T> {
+        unsafe { &self.states.get_unchecked(state_index) }
+    }
+
+
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
