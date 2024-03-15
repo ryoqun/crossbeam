@@ -109,12 +109,28 @@ impl<T> Block<T> {
 
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
-        return;
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in start..BLOCK_CAP - 1 {
             let state = unsafe { (*this).get_state_unchecked(i) };
 
+            // Mark the `DESTROY` bit if a thread is still using the slot.
+            if state.load(Ordering::Acquire) & READ == 0
+                && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
+            {
+                // If a thread is still using the slot, it will continue destruction of the block.
+                return;
+            }
+        }
+
+        // No thread is using the block, now it is safe to destroy it.
+        drop(unsafe { Box::from_raw(this) });
+    }
+
+    unsafe fn destroy_full(this: *mut Self) {
+        // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
+        // begun destruction of the block.
+        for state in this.states {
             // Mark the `DESTROY` bit if a thread is still using the slot.
             if state.load(Ordering::Acquire) & READ == 0
                 && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
@@ -412,7 +428,7 @@ impl<T> Channel<T> {
         // couldn't because we were busy reading from the slot.
         unsafe {
             if offset + 1 == BLOCK_CAP {
-                Block::destroy(block, 0);
+                Block::destroy_full(block);
             } else if slot.state.fetch_or(READ, Ordering::AcqRel) & DESTROY != 0 {
                 Block::destroy(block, offset + 1);
             }
