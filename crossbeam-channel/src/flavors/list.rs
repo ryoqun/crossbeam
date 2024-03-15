@@ -111,11 +111,7 @@ impl<T> Block<T> {
     unsafe fn destroy(this: *mut Self, start: usize) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
-        let mut i = BLOCK_CAP - 2;
-        loop {
-            if i < start {
-                break;
-            }
+        for i in start..BLOCK_CAP - 1 {
             let state = unsafe { (*this).get_state_unchecked(i) };
 
             // Mark the `DESTROY` bit if a thread is still using the slot.
@@ -125,10 +121,6 @@ impl<T> Block<T> {
                 // If a thread is still using the slot, it will continue destruction of the block.
                 return;
             }
-            if i == start {
-                break;
-            }
-            i -= 1;
         }
 
         // No thread is using the block, now it is safe to destroy it.
