@@ -3,7 +3,7 @@ use crossbeam_channel::{bounded, unbounded, Receiver, Select, Sender};
 mod message;
 
 const MESSAGES: usize = 500_000;
-const THREADS: usize = 4;
+const THREADS: usize = 16;
 
 fn new<T>(cap: Option<usize>) -> (Sender<T>, Receiver<T>) {
     match cap {
