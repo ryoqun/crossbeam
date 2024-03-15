@@ -130,7 +130,7 @@ impl<T> Block<T> {
     unsafe fn destroy_full(this: *mut Self) {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
-        for state in (*this).states {
+        for state in &(*this).states {
             // Mark the `DESTROY` bit if a thread is still using the slot.
             if state.load(Ordering::Acquire) & READ == 0
                 && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
