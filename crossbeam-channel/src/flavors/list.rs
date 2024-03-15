@@ -731,7 +731,8 @@ impl<T> SelectHandle for Receiver<'_, T> {
 
 impl<T> SelectHandle for Sender<'_, T> {
     fn try_select(&self, token: &mut Token) -> bool {
-        self.0.start_send(token)
+        self.0.start_send(token);
+        true
     }
 
     fn deadline(&self) -> Option<Instant> {
