@@ -66,7 +66,7 @@ struct Block<T> {
     next: AtomicPtr<Block<T>>,
 
     states: [AtomicState; BLOCK_CAP],
-    msgs: MaybeUninit<[UnsafeCell<MaybeUninit<T>>; BLOCK_CAP]>,
+    msgs: MaybeUninit<[CachePadded<UnsafeCell<MaybeUninit<T>>>; BLOCK_CAP]>,
 }
 
 impl<T> Block<T> {
