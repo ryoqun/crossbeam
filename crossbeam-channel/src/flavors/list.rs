@@ -196,7 +196,7 @@ impl<T> Channel<T> {
     }
 
     /// Attempts to reserve a slot for sending a message.
-    fn start_send(&self, token: &mut Token) -> bool {
+    fn start_send(&self, token: &mut Token) {
         let backoff = Backoff::new();
         let mut tail = self.tail.index.load(Ordering::Acquire);
         let mut block = self.tail.block.load(Ordering::Acquire);
@@ -206,7 +206,7 @@ impl<T> Channel<T> {
             // Check if the channel is disconnected.
             if tail & MARK_BIT != 0 {
                 token.list.block = ptr::null();
-                return true;
+                return;
             }
 
             // Calculate the offset of the index into the block.
@@ -267,7 +267,7 @@ impl<T> Channel<T> {
 
                     token.list.block = block as *const u8;
                     token.list.offset = offset;
-                    return true;
+                    return;
                 },
                 Err(t) => {
                     tail = t;
@@ -424,7 +424,7 @@ impl<T> Channel<T> {
         _deadline: Option<Instant>,
     ) -> Result<(), SendTimeoutError<T>> {
         let token = &mut Token::default();
-        assert!(self.start_send(token));
+        self.start_send(token);
         unsafe {
             self.write(token, msg)
                 .map_err(SendTimeoutError::Disconnected)
