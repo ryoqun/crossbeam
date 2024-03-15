@@ -27,8 +27,6 @@ use crate::waker::SyncWaker;
 // * If the block is being destroyed, `DESTROY` is set.
 type State = u8;
 type AtomicState = std::sync::atomic::AtomicU8;
-type Inex = u8;
-type AtomicIndex = std::sync::atomic::AtomicU8;
 const WRITE: State = 1;
 const READ: State = 2;
 const DESTROY: State = 4;
@@ -95,8 +93,8 @@ impl<T> Block<T> {
         }
     }
 
-    unsafe fn get_slot_unchecked(&self, msg_index: Index) -> Slot<'_, T> {
-        let state_index = (msg_index % 16) * 16 + msg_index / 16;
+    unsafe fn get_slot_unchecked(&self, msg_index: usize) -> Slot<'_, T> {
+        let state_index = (msg_index & 0x0f) << 4 | (msg_index >> 4);
         Slot {
             msg: unsafe { &self.msgs.assume_init_ref().get_unchecked(msg_index) },
             state: unsafe { &self.states.get_unchecked(state_index) },
@@ -134,7 +132,7 @@ impl<T> Block<T> {
 #[derive(Debug)]
 struct Position<T> {
     /// The index in the channel.
-    index: AtomicIndex,
+    index: AtomicUsize,
 
     /// The block in the linked list.
     block: AtomicPtr<Block<T>>,
@@ -188,7 +186,7 @@ impl<T> Channel<T> {
         Self {
             head: CachePadded::new(Position {
                 block: AtomicPtr::new(first_block),
-                index: AtomicIndex::new(0),
+                index: AtomicUsize::new(0),
             }),
             tail: CachePadded::new(Position {
                 block: AtomicPtr::new(first_block),
