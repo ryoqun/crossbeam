@@ -2,6 +2,9 @@ use crossbeam_channel::{bounded, unbounded, Receiver, Select, Sender};
 
 mod message;
 
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
 const MESSAGES: usize = 500_000;
 const THREADS: usize = 16;
 
