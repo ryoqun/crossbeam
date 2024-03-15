@@ -356,9 +356,9 @@ impl<T> Channel<T> {
                     return true;
                 },
                 Err(h) => {
+                    backoff.spin();
                     head = h;
                     block = self.head.block.load(Ordering::Acquire);
-                    backoff.spin();
                 }
             }
         }
