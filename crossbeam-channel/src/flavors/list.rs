@@ -113,7 +113,7 @@ impl<T> Block<T> {
         // begun destruction of the block.
         let mut i = BLOCK_CAP - 2;
         loop {
-            if i == start {
+            if i < start {
                 break;
             }
             let state = unsafe { (*this).get_state_unchecked(i) };
@@ -124,6 +124,9 @@ impl<T> Block<T> {
             {
                 // If a thread is still using the slot, it will continue destruction of the block.
                 return;
+            }
+            if i == start {
+                break;
             }
             i -= 1;
         }
