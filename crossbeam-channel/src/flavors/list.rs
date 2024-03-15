@@ -261,8 +261,9 @@ impl<T> Channel<T> {
                     return;
                 },
                 Err(t) => {
-                    tail = t;
                     backoff.spin();
+                    tail = t;
+                    block = self.tail.block.load(Ordering::Acquire);
                 }
             }
         }
