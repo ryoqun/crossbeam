@@ -196,7 +196,7 @@ impl<T> Channel<T> {
     }
 
     /// Attempts to reserve a slot for sending a message.
-    fn start_send(&self, token: &mut Token) {
+    fn start_send(&self, token: &mut ListToken) {
         let backoff = Backoff::new();
         let mut tail = self.tail.index.load(Ordering::Acquire);
         let mut block = self.tail.block.load(Ordering::Acquire);
@@ -205,7 +205,7 @@ impl<T> Channel<T> {
         loop {
             // Check if the channel is disconnected.
             if tail & MARK_BIT != 0 {
-                token.list.block = ptr::null();
+                token.block = ptr::null();
                 return;
             }
 
@@ -265,8 +265,8 @@ impl<T> Channel<T> {
                         (*block).next.store(next_block, Ordering::Release);
                     }
 
-                    token.list.block = block as *const u8;
-                    token.list.offset = offset;
+                    token.block = block as *const u8;
+                    token.offset = offset;
                     return;
                 },
                 Err(t) => {
@@ -279,15 +279,15 @@ impl<T> Channel<T> {
     }
 
     /// Writes a message into the channel.
-    pub(crate) unsafe fn write(&self, token: &mut Token, msg: T) -> Result<(), T> {
+    pub(crate) unsafe fn write(&self, token: &mut ListToken, msg: T) -> Result<(), T> {
         // If there is no slot, the channel is disconnected.
-        if token.list.block.is_null() {
+        if token.block.is_null() {
             return Err(msg);
         }
 
         // Write the message into the slot.
-        let block = token.list.block.cast::<Block<T>>();
-        let offset = token.list.offset;
+        let block = token.block.cast::<Block<T>>();
+        let offset = token.offset;
         let slot = unsafe { (*block).slots.get_unchecked(offset) };
         unsafe { slot.msg.get().write(MaybeUninit::new(msg)) }
         slot.state.fetch_or(WRITE, Ordering::Release);
@@ -298,7 +298,7 @@ impl<T> Channel<T> {
     }
 
     /// Attempts to reserve a slot for receiving a message.
-    fn start_recv(&self, token: &mut Token) -> bool {
+    fn start_recv(&self, token: &mut ListToken) -> bool {
         let backoff = Backoff::new();
         let mut head = self.head.index.load(Ordering::Acquire);
         let mut block = self.head.block.load(Ordering::Acquire);
@@ -326,7 +326,7 @@ impl<T> Channel<T> {
                     // If the channel is disconnected...
                     if tail & MARK_BIT != 0 {
                         // ...then receive an error.
-                        token.list.block = ptr::null();
+                        token.block = ptr::null();
                         return true;
                     } else {
                         // Otherwise, the receive operation is not ready.
@@ -369,8 +369,8 @@ impl<T> Channel<T> {
                         self.head.index.store(next_index, Ordering::Release);
                     }
 
-                    token.list.block = block as *const u8;
-                    token.list.offset = offset;
+                    token.block = block as *const u8;
+                    token.offset = offset;
                     return true;
                 },
                 Err(h) => {
@@ -383,15 +383,15 @@ impl<T> Channel<T> {
     }
 
     /// Reads a message from the channel.
-    pub(crate) unsafe fn read(&self, token: &mut Token) -> Result<T, ()> {
-        if token.list.block.is_null() {
+    pub(crate) unsafe fn read(&self, token: &mut ListToken) -> Result<T, ()> {
+        if token.block.is_null() {
             // The channel is disconnected.
             return Err(());
         }
 
         // Read the message.
-        let block = token.list.block as *mut Block<T>;
-        let offset = token.list.offset;
+        let block = token.block as *mut Block<T>;
+        let offset = token.offset;
         let slot = unsafe { (*block).slots.get_unchecked(offset) };
         slot.wait_write();
         let msg = unsafe { slot.msg.get().read().assume_init() };
@@ -423,7 +423,7 @@ impl<T> Channel<T> {
         msg: T,
         _deadline: Option<Instant>,
     ) -> Result<(), SendTimeoutError<T>> {
-        let token = &mut Token::default();
+        let token = &mut ListToken::default();
         self.start_send(token);
         unsafe {
             self.write(token, msg)
@@ -433,7 +433,7 @@ impl<T> Channel<T> {
 
     /// Attempts to receive a message without blocking.
     pub(crate) fn try_recv(&self) -> Result<T, TryRecvError> {
-        let token = &mut Token::default();
+        let token = &mut ListToken::default();
 
         if self.start_recv(token) {
             unsafe { self.read(token).map_err(|_| TryRecvError::Disconnected) }
@@ -444,7 +444,7 @@ impl<T> Channel<T> {
 
     /// Receives a message from the channel.
     pub(crate) fn recv(&self, deadline: Option<Instant>) -> Result<T, RecvTimeoutError> {
-        let token = &mut Token::default();
+        let token = &mut ListToken::default();
         loop {
             // Try receiving a message several times.
             let backoff = Backoff::new();
@@ -695,7 +695,7 @@ pub(crate) struct Sender<'a, T>(&'a Channel<T>);
 
 impl<T> SelectHandle for Receiver<'_, T> {
     fn try_select(&self, token: &mut Token) -> bool {
-        self.0.start_recv(token)
+        self.0.start_recv(&mut token.list)
     }
 
     fn deadline(&self) -> Option<Instant> {
@@ -731,7 +731,7 @@ impl<T> SelectHandle for Receiver<'_, T> {
 
 impl<T> SelectHandle for Sender<'_, T> {
     fn try_select(&self, token: &mut Token) -> bool {
-        self.0.start_send(token);
+        self.0.start_send(&mut token.list);
         true
     }
 
