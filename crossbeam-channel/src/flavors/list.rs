@@ -109,6 +109,7 @@ impl<T> Block<T> {
 
     /// Sets the `DESTROY` bit in slots starting from `start` and destroys the block.
     unsafe fn destroy(this: *mut Self, start: usize) {
+        return;
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in start..BLOCK_CAP - 1 {
