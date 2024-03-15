@@ -112,11 +112,11 @@ impl<T> Block<T> {
         // It is not necessary to set the `DESTROY` bit in the last slot because that slot has
         // begun destruction of the block.
         for i in start..BLOCK_CAP - 1 {
-            let slot = unsafe { (*this).get_slot_unchecked(i) };
+            let state = unsafe { (*this).get_state_unchecked(i) };
 
             // Mark the `DESTROY` bit if a thread is still using the slot.
-            if slot.state.load(Ordering::Acquire) & READ == 0
-                && slot.state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
+            if state.load(Ordering::Acquire) & READ == 0
+                && state.fetch_or(DESTROY, Ordering::AcqRel) & READ == 0
             {
                 // If a thread is still using the slot, it will continue destruction of the block.
                 return;
